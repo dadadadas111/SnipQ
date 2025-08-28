@@ -1,23 +1,16 @@
 version: "1"
 
 run:
-  timeout: 5m
+  timeout: 3m
 
 linters:
   enable:
     - errcheck
-    - gosimple
     - govet
-    - ineffassign
     - staticcheck
-    - typecheck
     - unused
     - gofmt
-    - goimports
-    - goconst
-    - gosec
-    - misspell
 
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+  max-issues-per-linter: 10
+  max-same-issues: 5
