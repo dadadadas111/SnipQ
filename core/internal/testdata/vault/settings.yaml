@@ -1,0 +1,12 @@
+prefix: ":"
+expandKey: "Tab"
+strictBoundaries: true
+excludedApps:
+  - "code.visualstudio"
+  - "jetbrains.intellij"
+locale: "en-US"
+defaultDateFormat: "2006-01-02"
+timezone: "Local"
+historyEnabled: true
+historyLimit: 200
+pinForSensitive: true

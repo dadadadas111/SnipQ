@@ -1,0 +1,6 @@
+id: "10-personal"
+name: "Personal"
+description: "Personal snippets and templates"
+icon: "👤"
+order: 10
+enabled: true

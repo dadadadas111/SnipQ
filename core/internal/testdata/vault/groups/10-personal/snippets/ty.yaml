@@ -1,0 +1,12 @@
+id: "snp_ty"
+name: "Thanks"
+trigger: ":ty"
+description: "Quick thanks in multiple languages"
+strict: false
+defaults:
+  lang: "en"
+  tone: "neutral"
+template: |
+  {{ if eq .lang "vi" }}{{ if eq .tone "casual" }}Cảm ơn bạn nha!{{ else }}Cảm ơn bạn.{{ end }}
+  {{ else if eq .lang "ja" }}ありがとうございます。
+  {{ else }}{{ if eq .tone "casual" }}Thanks!{{ else }}Thank you.{{ end }}{{ end }}

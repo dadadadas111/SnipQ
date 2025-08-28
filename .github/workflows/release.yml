@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-amd64
+            binary: snipq
+          - os: windows-latest
+            target: windows-amd64
+            binary: snipq.exe
+          - os: macos-latest
+            target: darwin-amd64
+            binary: snipq
+
+    defaults:
+      run:
+        working-directory: ./core
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Build
+      run: |
+        CGO_ENABLED=0 go build -ldflags="-s -w" -o ${{ matrix.binary }} ./cmd/cli
+
+    - name: Create archive
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          7z a snipq-${{ matrix.target }}.zip ${{ matrix.binary }}
+        else
+          tar -czf snipq-${{ matrix.target }}.tar.gz ${{ matrix.binary }}
+        fi
+      shell: bash
+
+    - name: Upload Release Asset (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./core/snipq-${{ matrix.target }}.zip
+        asset_name: snipq-${{ matrix.target }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset (Unix)
+      if: matrix.os != 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./core/snipq-${{ matrix.target }}.tar.gz
+        asset_name: snipq-${{ matrix.target }}.tar.gz
+        asset_content_type: application/gzip

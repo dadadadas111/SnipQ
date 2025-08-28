@@ -1,0 +1,9 @@
+id: "snp_date"
+name: "Date"
+trigger: ":date"
+description: "Current date with customizable format"
+strict: false
+defaults:
+  format: "2006-01-02"
+  tz: "Local"
+template: "{{ date .format .tz }}"

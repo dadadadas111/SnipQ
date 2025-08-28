@@ -1,0 +1,8 @@
+id: "snp_uuid"
+name: "UUID"
+trigger: ":uuid"
+description: "Generate a UUID"
+strict: false
+defaults:
+  upper: false
+template: "{{ if .upper }}{{ upper (uuid false) }}{{ else }}{{ uuid false }}{{ end }}"
