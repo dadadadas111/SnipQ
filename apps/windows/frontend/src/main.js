@@ -2,18 +2,26 @@ import './style.css';
 import './app.css';
 
 import logo from './assets/images/logo-universal.png';
-import {GetGroups, GetSnippets, ExpandSnippet, PreviewSnippet, CreateSampleData, GetVaultInfo} from '../wailsjs/go/main/App';
+import {GetGroups, GetSnippets, ExpandSnippet, PreviewSnippet, CreateSampleData, GetVaultInfo, ShowWindow, HideWindow, ToggleWindow, ExitApp} from '../wailsjs/go/main/App';
 
 document.querySelector('#app').innerHTML = `
     <div class="container">
         <header class="header">
             <img id="logo" class="logo" style="width: 32px; height: 32px;">
             <h1>SnipQ - Snippet Manager</h1>
+            <div class="header-controls">
+                <button class="btn-header" id="minimize-btn" title="Minimize to tray">−</button>
+                <button class="btn-header" id="close-btn" title="Hide to tray">×</button>
+            </div>
         </header>
         
         <div class="main-content">
             <div class="sidebar">
                 <h3>Groups</h3>
+                <div class="tray-controls">
+                    <button class="btn small" id="hide-to-tray-btn">Hide to Tray</button>
+                    <button class="btn small danger" id="exit-app-btn">Exit App</button>
+                </div>
                 <div id="vault-info" class="vault-info"></div>
                 <div id="groups-list" class="groups-list"></div>
             </div>
@@ -55,6 +63,12 @@ document.getElementById('expand-btn').addEventListener('click', testExpansion);
 document.getElementById('preview-btn').addEventListener('click', testPreview);
 document.getElementById('clear-btn').addEventListener('click', clearField);
 
+// Tray management event listeners
+document.getElementById('minimize-btn').addEventListener('click', hideToTray);
+document.getElementById('close-btn').addEventListener('click', hideToTray);
+document.getElementById('hide-to-tray-btn').addEventListener('click', hideToTray);
+document.getElementById('exit-app-btn').addEventListener('click', exitApp);
+
 // Add Enter key support
 triggerInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -65,6 +79,39 @@ triggerInput.addEventListener('keypress', function(e) {
 // Load groups on startup
 loadGroups();
 checkVaultInfo();
+
+// Tray management functions
+function hideToTray() {
+    console.log('Hiding to tray...');
+    try {
+        HideWindow()
+            .then(() => {
+                console.log('Window hidden to tray');
+            })
+            .catch((err) => {
+                console.error('Error hiding to tray:', err);
+            });
+    } catch (err) {
+        console.error('Exception hiding to tray:', err);
+    }
+}
+
+function exitApp() {
+    console.log('Exiting application...');
+    if (confirm('Are you sure you want to exit SnipQ?')) {
+        try {
+            ExitApp()
+                .then(() => {
+                    console.log('Application exited');
+                })
+                .catch((err) => {
+                    console.error('Error exiting app:', err);
+                });
+        } catch (err) {
+            console.error('Exception exiting app:', err);
+        }
+    }
+}
 
 // Clear field function
 function clearField() {

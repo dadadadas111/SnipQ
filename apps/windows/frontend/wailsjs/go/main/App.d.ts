@@ -6,6 +6,8 @@ export function CreateSampleData():Promise<void>;
 
 export function DeleteSnippet(arg1:string):Promise<void>;
 
+export function ExitApp():Promise<void>;
+
 export function ExpandSnippet(arg1:string):Promise<types.Rendered>;
 
 export function GetGroups():Promise<Array<types.Group>>;
@@ -18,6 +20,12 @@ export function GetVaultInfo():Promise<Record<string, any>>;
 
 export function Greet(arg1:string):Promise<string>;
 
+export function HideWindow():Promise<void>;
+
 export function PreviewSnippet(arg1:string):Promise<string>;
 
 export function SaveSnippet(arg1:types.Snippet):Promise<void>;
+
+export function ShowWindow():Promise<void>;
+
+export function ToggleWindow():Promise<void>;

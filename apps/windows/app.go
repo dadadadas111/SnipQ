@@ -12,21 +12,30 @@ import (
 
 // App struct
 type App struct {
-	ctx    context.Context
-	engine *core.Engine
+	ctx         context.Context
+	engine      *core.Engine
+	trayManager *TrayManager
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{
+	app := &App{
 		engine: core.NewEngine(),
 	}
+	app.trayManager = NewTrayManager(app)
+	return app
 }
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	// Initialize tray manager
+	err := a.trayManager.Initialize(ctx)
+	if err != nil {
+		fmt.Printf("Failed to initialize tray manager: %v\n", err)
+	}
 
 	// Try multiple vault locations
 	vaultPaths := []string{}
@@ -297,4 +306,26 @@ func (a *App) GetVaultInfo() map[string]interface{} {
 	}
 
 	return info
+}
+
+// Tray Management API Methods
+
+// ShowWindow shows the main window (callable from frontend)
+func (a *App) ShowWindow() {
+	a.trayManager.ShowWindow()
+}
+
+// HideWindow hides the main window (callable from frontend)
+func (a *App) HideWindow() {
+	a.trayManager.HideWindow()
+}
+
+// ToggleWindow toggles window visibility (callable from frontend)
+func (a *App) ToggleWindow() {
+	a.trayManager.ToggleWindow()
+}
+
+// ExitApp exits the application (callable from frontend)
+func (a *App) ExitApp() {
+	a.trayManager.ExitApp()
 }

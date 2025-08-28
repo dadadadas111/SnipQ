@@ -10,6 +10,10 @@ export function DeleteSnippet(arg1) {
   return window['go']['main']['App']['DeleteSnippet'](arg1);
 }
 
+export function ExitApp() {
+  return window['go']['main']['App']['ExitApp']();
+}
+
 export function ExpandSnippet(arg1) {
   return window['go']['main']['App']['ExpandSnippet'](arg1);
 }
@@ -34,10 +38,22 @@ export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
 
+export function HideWindow() {
+  return window['go']['main']['App']['HideWindow']();
+}
+
 export function PreviewSnippet(arg1) {
   return window['go']['main']['App']['PreviewSnippet'](arg1);
 }
 
 export function SaveSnippet(arg1) {
   return window['go']['main']['App']['SaveSnippet'](arg1);
+}
+
+export function ShowWindow() {
+  return window['go']['main']['App']['ShowWindow']();
+}
+
+export function ToggleWindow() {
+  return window['go']['main']['App']['ToggleWindow']();
 }
