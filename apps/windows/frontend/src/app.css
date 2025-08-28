@@ -3,6 +3,12 @@
     flex-direction: column;
     height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .header {
@@ -51,11 +57,12 @@
     cursor: pointer;
     border-radius: 6px;
     overflow: hidden;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .group-item:hover {
     background-color: #e9ecef;
+    transform: translateX(4px);
 }
 
 .group-header {
@@ -66,6 +73,25 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.group-header:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.group-header.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.group-header.active .group-id {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .group-id {
@@ -85,10 +111,15 @@
 .test-section {
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.test-section:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .test-section h3 {
@@ -100,9 +131,14 @@
 .snippets-section {
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.snippets-section:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .snippets-section h3, .snippets-section h4 {
@@ -114,34 +150,52 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .snippet-item {
-    padding: 1rem;
-    background: #f8f9fa;
+    padding: 1.5rem;
+    background: white;
     border: 1px solid #dee2e6;
-    border-radius: 6px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.snippet-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: #667eea;
 }
 
 .snippet-header {
     font-weight: 600;
     color: #495057;
     margin-bottom: 0.5rem;
+    font-size: 1.1rem;
 }
 
 .snippet-description {
     color: #6c757d;
     font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
 }
 
 .snippet-template {
-    background: #e9ecef;
-    padding: 0.75rem;
-    border-radius: 4px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 1rem;
+    border-radius: 6px;
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.85rem;
     overflow-x: auto;
+    color: #495057;
 }
 
 .snippet-template pre {
@@ -153,6 +207,7 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    align-items: center;
 }
 
 .input-box .input {
@@ -165,7 +220,7 @@
     padding: 0 12px;
     background-color: white;
     font-size: 0.9rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
 }
 
 .input-box .input:hover {
@@ -175,6 +230,7 @@
 .input-box .input:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: scale(1.02);
 }
 
 .input-box .btn {
@@ -188,17 +244,41 @@
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .input-box .btn:hover {
     background: #5a6fd8;
     border-color: #5a6fd8;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
 }
 
 .input-box .btn:active {
     transform: translateY(0);
+}
+
+.btn-clear {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #dc3545;
+    background: #dc3545;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-clear:hover {
+    background: #c82333;
+    border-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
 }
 
 .result {
@@ -211,6 +291,8 @@
     font-size: 0.9rem;
     white-space: pre-wrap;
     color: #495057;
+    text-align: left;
+    overflow-x: auto;
 }
 
 .error {
@@ -222,7 +304,75 @@
     margin: 0.5rem 0;
 }
 
+.debug-section {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.btn.small {
+    font-size: 0.8rem;
+    height: 28px;
+    line-height: 26px;
+    padding: 0 8px;
+}
+
+.vault-info {
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.vault-info-content {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 0.75rem;
+    border-radius: 6px;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.success {
+    color: #28a745;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
 #logo {
     width: 32px;
     height: 32px;
+}
+
+.snippet-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.btn.small {
+    font-size: 0.8rem;
+    height: 32px;
+    line-height: 30px;
+    padding: 0 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid #667eea;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn.small:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
