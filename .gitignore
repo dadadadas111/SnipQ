@@ -84,6 +84,12 @@ temp/
 !**/pkg/vault/
 !**/testdata/vault/
 
+# Ignore dynamic vault data files (user-specific data)
+**/history.jsonl
+**/counters.json
+history.jsonl
+counters.json
+
 # User configuration and data
 user-vault/
 my-vault/
