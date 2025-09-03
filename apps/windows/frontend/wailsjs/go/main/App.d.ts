@@ -10,7 +10,15 @@ export function ExitApp():Promise<void>;
 
 export function ExpandSnippet(arg1:string):Promise<types.Rendered>;
 
+export function GetDefaultHotkeys():Promise<Record<string, types.Hotkey>>;
+
 export function GetGroups():Promise<Array<types.Group>>;
+
+export function GetHotkeyStatuses():Promise<Record<string, types.HotkeyStatus>>;
+
+export function GetHotkeys():Promise<Record<string, types.Hotkey>>;
+
+export function GetPauseState():Promise<boolean>;
 
 export function GetSettings():Promise<types.Settings>;
 
@@ -24,8 +32,16 @@ export function HideWindow():Promise<void>;
 
 export function PreviewSnippet(arg1:string):Promise<string>;
 
+export function RefreshHotkeyStatuses():Promise<Record<string, types.HotkeyStatus>>;
+
 export function SaveSnippet(arg1:types.Snippet):Promise<void>;
 
 export function ShowWindow():Promise<void>;
 
+export function TogglePause():Promise<boolean>;
+
 export function ToggleWindow():Promise<void>;
+
+export function UpdateHotkeys(arg1:Record<string, types.Hotkey>):Promise<void>;
+
+export function ValidateHotkey(arg1:types.Hotkey):Promise<void>;

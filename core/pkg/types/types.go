@@ -44,16 +44,17 @@ type Snippet struct {
 
 // Settings represents global vault settings
 type Settings struct {
-	Prefix            string   `yaml:"prefix" json:"prefix"`
-	ExpandKey         string   `yaml:"expandKey" json:"expandKey"`
-	StrictBoundaries  bool     `yaml:"strictBoundaries" json:"strictBoundaries"`
-	ExcludedApps      []string `yaml:"excludedApps,omitempty" json:"excludedApps,omitempty"`
-	Locale            string   `yaml:"locale" json:"locale"`
-	DefaultDateFormat string   `yaml:"defaultDateFormat" json:"defaultDateFormat"`
-	Timezone          string   `yaml:"timezone" json:"timezone"`
-	HistoryEnabled    bool     `yaml:"historyEnabled" json:"historyEnabled"`
-	HistoryLimit      int      `yaml:"historyLimit" json:"historyLimit"`
-	PinForSensitive   bool     `yaml:"pinForSensitive" json:"pinForSensitive"`
+	Prefix            string             `yaml:"prefix" json:"prefix"`
+	ExpandKey         string             `yaml:"expandKey" json:"expandKey"`
+	StrictBoundaries  bool               `yaml:"strictBoundaries" json:"strictBoundaries"`
+	ExcludedApps      []string           `yaml:"excludedApps,omitempty" json:"excludedApps,omitempty"`
+	Locale            string             `yaml:"locale" json:"locale"`
+	DefaultDateFormat string             `yaml:"defaultDateFormat" json:"defaultDateFormat"`
+	Timezone          string             `yaml:"timezone" json:"timezone"`
+	HistoryEnabled    bool               `yaml:"historyEnabled" json:"historyEnabled"`
+	HistoryLimit      int                `yaml:"historyLimit" json:"historyLimit"`
+	PinForSensitive   bool               `yaml:"pinForSensitive" json:"pinForSensitive"`
+	Hotkeys           map[string]*Hotkey `yaml:"hotkeys,omitempty" json:"hotkeys,omitempty"`
 }
 
 // Counter represents a counter state
@@ -77,4 +78,19 @@ type HistoryEntry struct {
 	Output     string         `json:"output"`
 	UsedParams map[string]any `json:"usedParams"`
 	AppID      string         `json:"appId,omitempty"`
+}
+
+// Hotkey represents a configurable hotkey binding
+type Hotkey struct {
+	Modifiers []string `yaml:"modifiers" json:"modifiers"` // e.g., ["Ctrl", "Alt"]
+	Key       string   `yaml:"key" json:"key"`             // e.g., "Space", "Period", "Enter"
+	Enabled   bool     `yaml:"enabled" json:"enabled"`
+}
+
+// HotkeyStatus represents the OS registration status of a hotkey
+type HotkeyStatus struct {
+	Action string `json:"action"` // Action name (e.g., "openPalette")
+	Status string `json:"status"` // "Registered", "Conflict", "Not Registered"
+	Error  string `json:"error"`  // Error message if applicable
+	Hotkey Hotkey `json:"hotkey"` // Current hotkey configuration
 }

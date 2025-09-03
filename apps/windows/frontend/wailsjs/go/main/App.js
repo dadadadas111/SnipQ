@@ -18,8 +18,24 @@ export function ExpandSnippet(arg1) {
   return window['go']['main']['App']['ExpandSnippet'](arg1);
 }
 
+export function GetDefaultHotkeys() {
+  return window['go']['main']['App']['GetDefaultHotkeys']();
+}
+
 export function GetGroups() {
   return window['go']['main']['App']['GetGroups']();
+}
+
+export function GetHotkeyStatuses() {
+  return window['go']['main']['App']['GetHotkeyStatuses']();
+}
+
+export function GetHotkeys() {
+  return window['go']['main']['App']['GetHotkeys']();
+}
+
+export function GetPauseState() {
+  return window['go']['main']['App']['GetPauseState']();
 }
 
 export function GetSettings() {
@@ -46,6 +62,10 @@ export function PreviewSnippet(arg1) {
   return window['go']['main']['App']['PreviewSnippet'](arg1);
 }
 
+export function RefreshHotkeyStatuses() {
+  return window['go']['main']['App']['RefreshHotkeyStatuses']();
+}
+
 export function SaveSnippet(arg1) {
   return window['go']['main']['App']['SaveSnippet'](arg1);
 }
@@ -54,6 +74,18 @@ export function ShowWindow() {
   return window['go']['main']['App']['ShowWindow']();
 }
 
+export function TogglePause() {
+  return window['go']['main']['App']['TogglePause']();
+}
+
 export function ToggleWindow() {
   return window['go']['main']['App']['ToggleWindow']();
+}
+
+export function UpdateHotkeys(arg1) {
+  return window['go']['main']['App']['UpdateHotkeys'](arg1);
+}
+
+export function ValidateHotkey(arg1) {
+  return window['go']['main']['App']['ValidateHotkey'](arg1);
 }

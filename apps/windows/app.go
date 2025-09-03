@@ -6,23 +6,34 @@ import (
 	"os"
 	"path/filepath"
 
+	"snipq-windows/internal/hotkey"
+
 	"github.com/snipq/core/pkg/core"
 	"github.com/snipq/core/pkg/types"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
 type App struct {
-	ctx         context.Context
-	engine      *core.Engine
-	trayManager *TrayManager
+	ctx           context.Context
+	engine        *core.Engine
+	trayManager   *TrayManager
+	hotkeyManager *hotkey.Manager
+	isPaused      bool
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	app := &App{
-		engine: core.NewEngine(),
+		engine:        core.NewEngine(),
+		hotkeyManager: hotkey.NewManager(),
+		isPaused:      false,
 	}
 	app.trayManager = NewTrayManager(app)
+
+	// Set up hotkey event handler
+	app.hotkeyManager.SetEventHandler(app.handleHotkeyEvent)
+
 	return app
 }
 
@@ -87,6 +98,42 @@ func (a *App) startup(ctx context.Context) {
 				fmt.Printf("Successfully created sample vault\n")
 			}
 		}
+	}
+
+	// Initialize hotkeys with defaults if none exist (after vault is loaded)
+	settings, err := a.engine.GetSettings()
+	if err != nil || settings.Hotkeys == nil {
+		// Initialize with default hotkeys
+		if settings.Hotkeys == nil {
+			settings.Hotkeys = hotkey.GetDefaultHotkeys()
+			fmt.Printf("Initializing default hotkeys\n")
+
+			// Save the default hotkeys to settings
+			err = a.engine.SaveSettings(settings)
+			if err != nil {
+				fmt.Printf("Failed to save default hotkeys: %v\n", err)
+			} else {
+				// Save vault to disk
+				err = a.engine.Save()
+				if err != nil {
+					fmt.Printf("Failed to save vault with default hotkeys: %v\n", err)
+				} else {
+					fmt.Printf("Default hotkeys saved to vault\n")
+				}
+			}
+		}
+	}
+
+	// Register hotkeys (initial registration)
+	err = a.hotkeyManager.InitialRegisterHotkeys(settings.Hotkeys)
+	if err != nil {
+		fmt.Printf("Failed to register hotkeys: %v\n", err)
+	}
+
+	// Start hotkey listening
+	err = a.hotkeyManager.StartListening()
+	if err != nil {
+		fmt.Printf("Failed to start hotkey listening: %v\n", err)
 	}
 }
 
@@ -327,5 +374,125 @@ func (a *App) ToggleWindow() {
 
 // ExitApp exits the application (callable from frontend)
 func (a *App) ExitApp() {
+	a.hotkeyManager.StopListening()
+	a.hotkeyManager.UnregisterAll()
 	a.trayManager.ExitApp()
+}
+
+// Hotkey Management API Methods
+
+// handleHotkeyEvent handles hotkey activation events
+func (a *App) handleHotkeyEvent(action string) {
+	fmt.Printf("[APP] Hotkey event received: %s\n", action)
+
+	switch action {
+	case "openPalette":
+		fmt.Printf("[APP] Opening palette via hotkey\n")
+		runtime.EventsEmit(a.ctx, "hotkey:openPalette")
+
+	case "togglePause":
+		a.isPaused = !a.isPaused
+		fmt.Printf("[APP] Toggling pause via hotkey: %t\n", a.isPaused)
+		runtime.EventsEmit(a.ctx, "hotkey:pauseToggled", map[string]interface{}{
+			"paused": a.isPaused,
+		})
+
+	case "expandNow":
+		fmt.Printf("[APP] Expand now via hotkey\n")
+		runtime.EventsEmit(a.ctx, "hotkey:expandNow")
+
+	default:
+		fmt.Printf("[APP] Unknown hotkey action: %s\n", action)
+	}
+}
+
+// GetHotkeyStatuses returns the current registration status of all hotkeys
+func (a *App) GetHotkeyStatuses() map[string]*types.HotkeyStatus {
+	return a.hotkeyManager.GetStatuses()
+}
+
+// GetHotkeys returns the current hotkey settings
+func (a *App) GetHotkeys() map[string]*types.Hotkey {
+	settings, err := a.engine.GetSettings()
+	if err != nil || settings.Hotkeys == nil {
+		return hotkey.GetDefaultHotkeys()
+	}
+	return settings.Hotkeys
+}
+
+// UpdateHotkeys updates hotkey settings and re-registers them
+func (a *App) UpdateHotkeys(hotkeys map[string]*types.Hotkey) error {
+	fmt.Printf("[APP] Updating hotkeys: %+v\n", hotkeys)
+
+	// Get current settings
+	settings, err := a.engine.GetSettings()
+	if err != nil {
+		return fmt.Errorf("failed to get settings: %w", err)
+	}
+
+	// Update hotkeys in settings
+	settings.Hotkeys = hotkeys
+
+	// Save settings to vault
+	err = a.engine.SaveSettings(settings)
+	if err != nil {
+		return fmt.Errorf("failed to save settings: %w", err)
+	}
+
+	// Save vault to disk
+	err = a.engine.Save()
+	if err != nil {
+		return fmt.Errorf("failed to save vault: %w", err)
+	}
+
+	// Re-register hotkeys
+	err = a.hotkeyManager.RegisterHotkeys(hotkeys)
+	if err != nil {
+		fmt.Printf("[APP] Failed to register hotkeys: %v\n", err)
+		// Continue anyway since settings are saved
+	}
+
+	fmt.Printf("[APP] Hotkeys updated and saved successfully\n")
+	return nil
+}
+
+// ValidateHotkey validates a hotkey configuration
+func (a *App) ValidateHotkey(hk types.Hotkey) error {
+	return hotkey.ValidateHotkey(hk)
+}
+
+// RefreshHotkeyStatuses refreshes the registration status of all hotkeys
+func (a *App) RefreshHotkeyStatuses() map[string]*types.HotkeyStatus {
+	fmt.Printf("[APP] Refreshing hotkey statuses\n")
+
+	// Get current hotkeys
+	hotkeys := a.GetHotkeys()
+
+	// Re-register to get fresh status
+	err := a.hotkeyManager.RegisterHotkeys(hotkeys)
+	if err != nil {
+		fmt.Printf("[APP] Error refreshing hotkeys: %v\n", err)
+	}
+
+	return a.hotkeyManager.GetStatuses()
+}
+
+// GetDefaultHotkeys returns the default hotkey configuration
+func (a *App) GetDefaultHotkeys() map[string]*types.Hotkey {
+	return hotkey.GetDefaultHotkeys()
+}
+
+// GetPauseState returns the current pause state
+func (a *App) GetPauseState() bool {
+	return a.isPaused
+}
+
+// TogglePause toggles the pause state manually (callable from UI)
+func (a *App) TogglePause() bool {
+	a.isPaused = !a.isPaused
+	fmt.Printf("[APP] Toggling pause via UI: %t\n", a.isPaused)
+	runtime.EventsEmit(a.ctx, "hotkey:pauseToggled", map[string]interface{}{
+		"paused": a.isPaused,
+	})
+	return a.isPaused
 }
