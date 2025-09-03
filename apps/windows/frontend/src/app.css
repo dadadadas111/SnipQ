@@ -326,51 +326,13 @@
     flex-wrap: wrap;
 }
 
-.btn.small {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 4px;
-    font-weight: 500;
-    border: 1px solid transparent;
-    white-space: nowrap;
-    min-width: 60px;
-    text-align: center;
-}
 
-.btn.change {
-    background: #28a745;
-    border-color: #28a745;
-    color: white;
-}
 
-.btn.change:hover {
-    background: #218838;
-    border-color: #1e7e34;
-}
-
-.btn.reset {
-    background: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-.btn.reset:hover {
-    background: #5a6268;
-    border-color: #545b62;
-}
-
-.hotkeys-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 2px solid #dee2e6;
-}
-
+/* Unified button base style for all buttons */
 .btn {
     padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    border-radius: 4px;
+    font-size: 0.95rem;
+    border-radius: 6px;
     font-weight: 500;
     border: 1px solid transparent;
     cursor: pointer;
@@ -379,15 +341,12 @@
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s ease;
+    min-width: 60px;
+    text-align: center;
 }
 
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn:active {
-    transform: translateY(0);
+.btn.small {
+    font-size: 0.85rem;
 }
 
 .btn.primary {
@@ -395,55 +354,69 @@
     border-color: #007bff;
     color: white;
 }
-
 .btn.primary:hover {
     background: #0056b3;
     border-color: #0056b3;
 }
-
 .btn.secondary {
     background: #6c757d;
     border-color: #6c757d;
     color: white;
 }
-
 .btn.secondary:hover {
     background: #5a6268;
     border-color: #5a6268;
 }
-
-.btn.success {
-    background: #28a745;
+.btn.success,
+.btn.change,
+.btn.small.green {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
     border-color: #28a745;
     color: white;
 }
-
-.btn.success:hover {
-    background: #218838;
+.btn.success:hover,
+.btn.change:hover,
+.btn.small.green:hover {
+    background: linear-gradient(135deg, #218838 0%, #28a745 100%);
     border-color: #1e7e34;
 }
-
 .btn.danger {
     background: #dc3545;
     border-color: #dc3545;
     color: white;
 }
-
 .btn.danger:hover {
     background: #c82333;
     border-color: #bd2130;
 }
-
 .btn.warning {
     background: #ffc107;
     border-color: #ffc107;
     color: #212529;
 }
-
 .btn.warning:hover {
     background: #e0a800;
     border-color: #d39e00;
 }
+.btn.reset {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+.btn.reset:hover {
+    background: #5a6268;
+    border-color: #545b62;
+}
+
+.btn.pause-toggle,
+.refresh-btn,
+.btn-clear,
+.input-box .btn {
+    /* Inherit all sizing from .btn, only override color/background if needed below */
+}
+
+
+/* Removed duplicate .btn, .btn.small, .btn.success, .btn.change, .btn.small.green definitions below. All sizing is now unified above. */
 
 /* Hotkey Recording Modal */
 .hotkey-modal {
@@ -835,12 +808,7 @@
     flex-wrap: wrap;
 }
 
-.btn.small {
-    font-size: 0.8rem;
-    height: 28px;
-    line-height: 26px;
-    padding: 0 8px;
-}
+/* Remove duplicate .btn.small rule above, keep unified version */
 
 .vault-info {
     margin-bottom: 1rem;
@@ -878,22 +846,4 @@
     border-top: 1px solid #dee2e6;
 }
 
-.btn.small {
-    font-size: 0.8rem;
-    height: 32px;
-    line-height: 30px;
-    padding: 0 12px;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: 1px solid #667eea;
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.btn.small:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-}
+/* Remove duplicate .btn.small rule above, keep unified version */
