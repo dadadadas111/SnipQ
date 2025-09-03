@@ -63,15 +63,15 @@ type EventHandler func(action string)
 
 // Manager handles hotkey registration and events
 type Manager struct {
-	mu            sync.RWMutex
-	registrations map[string]*registration // action -> registration
-	statuses      map[string]*types.HotkeyStatus
-	eventHandler  EventHandler
-	done          chan bool
-	running       bool
-	registerChan  chan registerRequest
+	mu             sync.RWMutex
+	registrations  map[string]*registration // action -> registration
+	statuses       map[string]*types.HotkeyStatus
+	eventHandler   EventHandler
+	done           chan bool
+	running        bool
+	registerChan   chan registerRequest
 	unregisterChan chan string
-	responseChan  chan error
+	responseChan   chan error
 }
 
 // registerRequest represents a hotkey registration request
@@ -257,12 +257,12 @@ func (m *Manager) RegisterHotkeys(hotkeys map[string]*types.Hotkey) error {
 // InitialRegisterHotkeys performs initial registration during startup (clears all first)
 func (m *Manager) InitialRegisterHotkeys(hotkeys map[string]*types.Hotkey) error {
 	log.Printf("[HOTKEY] Initial registration of %d hotkeys", len(hotkeys))
-	
+
 	// Check if message loop is running
 	m.mu.RLock()
 	running := m.running
 	m.mu.RUnlock()
-	
+
 	if !running {
 		log.Println("[HOTKEY] Message loop not running, starting it first")
 		if err := m.StartListening(); err != nil {
@@ -271,7 +271,7 @@ func (m *Manager) InitialRegisterHotkeys(hotkeys map[string]*types.Hotkey) error
 		// Give the message loop time to start
 		time.Sleep(100 * time.Millisecond)
 	}
-	
+
 	// Send registration request to message loop thread
 	select {
 	case m.registerChan <- registerRequest{hotkeys: hotkeys, initial: true}:
@@ -689,7 +689,7 @@ func (m *Manager) messageLoop() {
 	// Lock this goroutine to an OS thread to ensure consistent message handling
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
-	
+
 	log.Println("[HOTKEY] Message loop started with health monitoring on dedicated OS thread")
 	defer log.Println("[HOTKEY] Message loop stopped")
 
@@ -708,7 +708,7 @@ func (m *Manager) messageLoop() {
 		case <-m.done:
 			log.Println("[HOTKEY] Message loop received stop signal")
 			return
-		
+
 		case req := <-m.registerChan:
 			log.Println("[HOTKEY] Processing hotkey registration request on message loop thread")
 			var err error
@@ -725,11 +725,11 @@ func (m *Manager) messageLoop() {
 			case <-time.After(1 * time.Second):
 				log.Println("[HOTKEY] Warning: timeout sending registration response")
 			}
-		
+
 		case action := <-m.unregisterChan:
 			log.Printf("[HOTKEY] Processing unregister request for action: %s", action)
 			m.unregisterSingleInternal(action)
-			
+
 		case <-healthTicker.C:
 			// Health check - log status
 			log.Printf("[HOTKEY] Message loop health check - processed %d messages, last activity: %v ago",
