@@ -408,7 +408,8 @@ function showHotkeyRecordingModal(action) {
     const modal = document.createElement('div');
     modal.className = 'hotkey-modal';
     modal.innerHTML = `
-        <div class="hotkey-modal-content">
+        <div class="hotkey-modal-content" style="position: relative;">
+            <button id="close-modal-x" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.7rem; color: #495057; cursor: pointer; z-index: 10;" title="Close">&times;</button>
             <h3>Record Hotkey for ${actionName}</h3>
             <p>Press your desired key combination. Use Ctrl, Alt, Shift, or Win + another key.</p>
             <div class="recording-display listening" id="recording-display">
@@ -417,7 +418,6 @@ function showHotkeyRecordingModal(action) {
             <div class="recording-error" id="recording-error" style="display: none;"></div>
             <div class="modal-actions">
                 <button class="btn success" id="save-recording" style="display: none;">Save</button>
-                <button class="btn secondary" id="cancel-recording">Cancel</button>
             </div>
         </div>
     `;
@@ -427,7 +427,7 @@ function showHotkeyRecordingModal(action) {
     const recordingDisplay = modal.querySelector('#recording-display');
     const recordingError = modal.querySelector('#recording-error');
     const saveBtn = modal.querySelector('#save-recording');
-    const cancelBtn = modal.querySelector('#cancel-recording');
+    const closeXBtn = modal.querySelector('#close-modal-x');
     
     let recordedHotkey = null;
     
@@ -508,7 +508,7 @@ function showHotkeyRecordingModal(action) {
         closeModal();
     });
     
-    cancelBtn.addEventListener('click', closeModal);
+    closeXBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
