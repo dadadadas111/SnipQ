@@ -248,10 +248,30 @@ func getModifierFlags(modifiers []string) uint32 {
 // RegisterHotkeys registers hotkeys from settings
 func (m *Manager) RegisterHotkeys(hotkeys map[string]*types.Hotkey) error {
 	log.Printf("[HOTKEY] Registering %d hotkeys", len(hotkeys))
-	m.mu.Lock()
-	defer m.mu.Unlock()
 
-	return m.registerHotkeysInternal(hotkeys)
+	// Check if message loop is running
+	m.mu.RLock()
+	running := m.running
+	m.mu.RUnlock()
+
+	if !running {
+		log.Println("[HOTKEY] Message loop not running, cannot register hotkeys")
+		return fmt.Errorf("message loop not running")
+	}
+
+	// Send registration request to message loop thread
+	select {
+	case m.registerChan <- registerRequest{hotkeys: hotkeys, initial: false}:
+		// Wait for response
+		select {
+		case err := <-m.responseChan:
+			return err
+		case <-time.After(5 * time.Second):
+			return fmt.Errorf("timeout waiting for hotkey registration")
+		}
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("timeout sending registration request")
+	}
 }
 
 // InitialRegisterHotkeys performs initial registration during startup (clears all first)
