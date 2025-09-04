@@ -35,6 +35,7 @@ type ExpansionManager struct {
 	enabled         bool
 	expansionMethod ExpansionMethod
 	pauseOnFailure  bool
+	currentSettings types.Settings // Store current settings
 
 	// State
 	lastTrigger     string
@@ -62,6 +63,9 @@ func NewExpansionManager(engine *core.Engine) *ExpansionManager {
 
 	// Set up navigation handler for suggestion control
 	em.keyboardHook.SetNavigationHandler(em.handleNavigation)
+
+	// Set up suggestion acceptance handler for Tab key
+	em.keyboardHook.SetSuggestionAcceptHandler(em.handleSuggestionAccept)
 
 	// Set up suggestion selection handler
 	em.suggestionManager.SetSelectionHandler(em.handleSuggestionSelection)
@@ -133,6 +137,28 @@ func (em *ExpansionManager) handleNavigation(direction string) bool {
 	return false
 }
 
+// handleSuggestionAccept handles suggestion acceptance from Tab key
+func (em *ExpansionManager) handleSuggestionAccept() bool {
+	// Only handle if suggestions are enabled and visible
+	if !em.suggestionManager.IsEnabled() {
+		return false
+	}
+
+	// Check if there's a current selection to accept
+	selectedSuggestion := em.suggestionManager.SelectCurrent()
+	if selectedSuggestion == nil {
+		return false
+	}
+
+	// Accept the selected suggestion
+	accepted := em.suggestionManager.AcceptSelected()
+	if accepted {
+		log.Printf("[EXPANSION] Tab key accepted suggestion: %s", selectedSuggestion.Trigger)
+	}
+
+	return accepted
+}
+
 // Stop stops the expansion manager
 func (em *ExpansionManager) Stop() {
 	log.Println("[EXPANSION] Stopping expansion manager")
@@ -185,6 +211,16 @@ func (em *ExpansionManager) UpdateSettings() error {
 	return nil
 }
 
+// UpdateSettingsWithValues updates the expansion settings with provided values
+func (em *ExpansionManager) UpdateSettingsWithValues(settings types.Settings) error {
+	em.currentSettings = settings // Store settings
+	em.keyboardHook.UpdateSettings(settings)
+	em.suggestionManager.UpdateSettings(settings) // Update suggestion manager settings
+	log.Printf("[EXPANSION] Settings updated with values: prefix=%s, expandKey=%s, strictBoundaries=%t",
+		settings.Prefix, settings.ExpandKey, settings.StrictBoundaries)
+	return nil
+}
+
 // handleTrigger handles trigger detection from the keyboard hook
 func (em *ExpansionManager) handleTrigger(trigger string) {
 	log.Printf("[EXPANSION] Trigger detected: %s", trigger)
@@ -213,9 +249,12 @@ func (em *ExpansionManager) handleTrigger(trigger string) {
 
 // expandTrigger expands a trigger and injects the result
 func (em *ExpansionManager) expandTrigger(trigger string) error {
-	// Create trigger input
+	// Normalize trigger: convert user's prefix to standard ":" prefix for lookup
+	normalizedTrigger := em.normalizeTrigger(trigger)
+
+	// Create trigger input with normalized trigger
 	input := types.TriggerInput{
-		RawTrigger: trigger,
+		RawTrigger: normalizedTrigger,
 		Now:        time.Now(),
 		AppID:      "", // TODO: Detect current application
 	}
@@ -226,7 +265,7 @@ func (em *ExpansionManager) expandTrigger(trigger string) error {
 		return fmt.Errorf("failed to expand trigger: %w", err)
 	}
 
-	log.Printf("[EXPANSION] Expanded '%s' to '%s'", trigger, rendered.Output)
+	log.Printf("[EXPANSION] Expanded '%s' (normalized: '%s') to '%s'", trigger, normalizedTrigger, rendered.Output)
 
 	// Calculate how many characters to delete (trigger length)
 	deleteCount := len(trigger)
@@ -255,9 +294,12 @@ func (em *ExpansionManager) expandTrigger(trigger string) error {
 
 // expandSuggestion expands a suggestion trigger with smart deletion based on what user actually typed
 func (em *ExpansionManager) expandSuggestion(trigger string, currentBuffer string) error {
-	// Create trigger input
+	// Normalize trigger: convert user's prefix to standard ":" prefix for lookup
+	normalizedTrigger := em.normalizeTrigger(trigger)
+
+	// Create trigger input with normalized trigger
 	input := types.TriggerInput{
-		RawTrigger: trigger,
+		RawTrigger: normalizedTrigger,
 		Now:        time.Now(),
 		AppID:      "", // TODO: Detect current application
 	}
@@ -268,7 +310,7 @@ func (em *ExpansionManager) expandSuggestion(trigger string, currentBuffer strin
 		return fmt.Errorf("failed to expand trigger: %w", err)
 	}
 
-	log.Printf("[EXPANSION] Expanded suggestion '%s' to '%s'", trigger, rendered.Output)
+	log.Printf("[EXPANSION] Expanded suggestion '%s' (normalized: '%s') to '%s'", trigger, normalizedTrigger, rendered.Output)
 
 	// Calculate smart delete count based on what user actually typed
 	deleteCount := em.calculateSmartDeleteCount(trigger, currentBuffer)
@@ -304,8 +346,8 @@ func (em *ExpansionManager) calculateSmartDeleteCount(fullTrigger string, curren
 		return 0
 	}
 
-	// Find the last occurrence of the trigger prefix (:)
-	prefix := ":"
+	// Find the last occurrence of the trigger prefix using current settings
+	prefix := em.currentSettings.Prefix
 	lastPrefixIndex := strings.LastIndex(currentBuffer, prefix)
 	if lastPrefixIndex == -1 {
 		// No prefix found, delete the entire buffer
@@ -454,4 +496,20 @@ func (em *ExpansionManager) SelectPreviousSuggestion() {
 // AcceptSelectedSuggestion accepts the currently selected suggestion
 func (em *ExpansionManager) AcceptSelectedSuggestion() bool {
 	return em.suggestionManager.AcceptSelected()
+}
+
+// normalizeTrigger converts user's custom prefix to standard ":" prefix for vault lookup
+func (em *ExpansionManager) normalizeTrigger(trigger string) string {
+	if em.currentSettings.Prefix == ":" {
+		// Already using standard prefix, no normalization needed
+		return trigger
+	}
+
+	// Replace user's prefix with standard ":" prefix
+	if strings.HasPrefix(trigger, em.currentSettings.Prefix) {
+		return ":" + strings.TrimPrefix(trigger, em.currentSettings.Prefix)
+	}
+
+	// If trigger doesn't start with current prefix, return as-is
+	return trigger
 }

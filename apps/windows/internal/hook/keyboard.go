@@ -94,20 +94,24 @@ type BufferUpdateHandler func(buffer string)
 // NavigationHandler is called when navigation events occur
 type NavigationHandler func(direction string) bool
 
+// SuggestionAcceptHandler is called to check if suggestions should be accepted instead of normal expansion
+type SuggestionAcceptHandler func() bool
+
 // KeyboardHook manages the low-level keyboard hook
 type KeyboardHook struct {
-	mu            sync.RWMutex
-	hook          uintptr
-	running       bool
-	buffer        strings.Builder
-	lastKeyTime   time.Time
-	prefix        string
-	expandKey     string
-	handler       TriggerHandler
-	bufferHandler BufferUpdateHandler
-	navHandler    NavigationHandler
-	done          chan bool
-	bufferMutex   sync.Mutex
+	mu                sync.RWMutex
+	hook              uintptr
+	running           bool
+	buffer            strings.Builder
+	lastKeyTime       time.Time
+	prefix            string
+	expandKey         string
+	handler           TriggerHandler
+	bufferHandler     BufferUpdateHandler
+	navHandler        NavigationHandler
+	suggestionHandler SuggestionAcceptHandler
+	done              chan bool
+	bufferMutex       sync.Mutex
 
 	// Settings
 	strictBoundaries bool
@@ -146,6 +150,13 @@ func (kh *KeyboardHook) SetNavigationHandler(handler NavigationHandler) {
 	kh.mu.Lock()
 	defer kh.mu.Unlock()
 	kh.navHandler = handler
+}
+
+// SetSuggestionAcceptHandler sets the handler for suggestion acceptance
+func (kh *KeyboardHook) SetSuggestionAcceptHandler(handler SuggestionAcceptHandler) {
+	kh.mu.Lock()
+	defer kh.mu.Unlock()
+	kh.suggestionHandler = handler
 }
 
 // UpdateSettings updates the hook settings
@@ -430,6 +441,17 @@ func (kh *KeyboardHook) processKey(vkCode uint32) bool {
 
 // handleExpandKey handles the expand key press
 func (kh *KeyboardHook) handleExpandKey() bool {
+	// First, check if there are suggestions available to accept
+	kh.mu.RLock()
+	suggestionHandler := kh.suggestionHandler
+	kh.mu.RUnlock()
+
+	if suggestionHandler != nil && suggestionHandler() {
+		// Suggestion was accepted, suppress the key
+		return true
+	}
+
+	// No suggestions accepted, proceed with normal trigger expansion
 	content := kh.buffer.String()
 
 	// Check if we have a potential trigger

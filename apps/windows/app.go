@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -22,6 +24,7 @@ type App struct {
 	hotkeyManager    *hotkey.Manager
 	expansionManager *expansion.ExpansionManager
 	isPaused         bool
+	currentSettings  AppSettings
 }
 
 // NewApp creates a new App application struct
@@ -30,6 +33,21 @@ func NewApp() *App {
 		engine:        core.NewEngine(),
 		hotkeyManager: hotkey.NewManager(),
 		isPaused:      false,
+		currentSettings: AppSettings{
+			TriggerPrefix:       ":",
+			ExpandKey:           "Tab",
+			TypingTimeout:       2000,
+			ExpansionMethod:     "direct",
+			SuggestionsEnabled:  true,
+			MinQueryLength:      1,
+			MaxSuggestions:      10,
+			SuggestionDelay:     200,
+			SuggestionHideDelay: 1000,
+			StrictBoundaries:    true,
+			PauseOnFailure:      false,
+			BufferSize:          100,
+			CaseSensitive:       false,
+		},
 	}
 	app.trayManager = NewTrayManager(app)
 	app.expansionManager = expansion.NewExpansionManager(app.engine)
@@ -133,6 +151,17 @@ func (a *App) startup(ctx context.Context) {
 		fmt.Printf("Failed to register hotkeys: %v\n", err)
 	}
 
+	// Load and apply saved app settings
+	savedAppSettings, err := a.loadAppSettings()
+	if err != nil {
+		fmt.Printf("Failed to load app settings: %v\n", err)
+	} else {
+		// Apply the loaded settings
+		a.currentSettings = savedAppSettings
+		fmt.Printf("Loaded app settings: suggestionsEnabled=%t, prefix=%s\n",
+			savedAppSettings.SuggestionsEnabled, savedAppSettings.TriggerPrefix)
+	}
+
 	// Start hotkey listening
 	err = a.hotkeyManager.StartListening()
 	if err != nil {
@@ -145,6 +174,14 @@ func (a *App) startup(ctx context.Context) {
 		fmt.Printf("Failed to start expansion manager: %v\n", err)
 	} else {
 		fmt.Printf("Expansion manager started successfully\n")
+
+		// Apply saved app settings to expansion manager
+		err = a.UpdateSettings(a.currentSettings)
+		if err != nil {
+			fmt.Printf("Failed to apply saved app settings: %v\n", err)
+		} else {
+			fmt.Printf("Applied saved app settings successfully\n")
+		}
 	}
 }
 
@@ -231,6 +268,22 @@ pinForSensitive: false`
 			Trigger:     ":today",
 			Description: "Insert current date",
 			Template:    "{{ date \"Monday, January 2, 2006\" \"Local\" }}",
+			GroupID:     "personal",
+		},
+		{
+			ID:          "today_test",
+			Name:        "Today Test",
+			Trigger:     ":todaytest",
+			Description: "Test snippet for today prefix",
+			Template:    "This is a test snippet for today: {{ date \"2006-01-02\" \"Local\" }}",
+			GroupID:     "personal",
+		},
+		{
+			ID:          "todo_item",
+			Name:        "Todo Item",
+			Trigger:     ":todo",
+			Description: "Create a todo item",
+			Template:    "- [ ] TODO: Add your task here",
 			GroupID:     "personal",
 		},
 		{
@@ -574,4 +627,301 @@ func (a *App) SelectPreviousSuggestion() {
 // AcceptSelectedSuggestion accepts the currently selected suggestion
 func (a *App) AcceptSelectedSuggestion() bool {
 	return a.expansionManager.AcceptSelectedSuggestion()
+}
+
+// Settings Management API Methods
+
+// AppSettings represents all application settings
+type AppSettings struct {
+	// Basic expansion settings
+	TriggerPrefix   string `json:"triggerPrefix"`
+	ExpandKey       string `json:"expandKey"`
+	TypingTimeout   int    `json:"typingTimeout"`   // milliseconds, 0 = no timeout
+	ExpansionMethod string `json:"expansionMethod"` // "direct" or "clipboard"
+
+	// Suggestions settings
+	SuggestionsEnabled  bool `json:"suggestionsEnabled"`
+	MinQueryLength      int  `json:"minQueryLength"`
+	MaxSuggestions      int  `json:"maxSuggestions"`
+	SuggestionDelay     int  `json:"suggestionDelay"`     // milliseconds
+	SuggestionHideDelay int  `json:"suggestionHideDelay"` // milliseconds
+
+	// Advanced settings
+	StrictBoundaries bool `json:"strictBoundaries"`
+	PauseOnFailure   bool `json:"pauseOnFailure"`
+	BufferSize       int  `json:"bufferSize"`
+	CaseSensitive    bool `json:"caseSensitive"`
+
+	// Hotkeys (optional, can be updated separately)
+	Hotkeys map[string]interface{} `json:"hotkeys,omitempty"`
+}
+
+// GetAppSettings returns the current application settings
+func (a *App) GetAppSettings() AppSettings {
+	return a.currentSettings
+}
+
+// UpdateSettings updates the application settings
+func (a *App) UpdateSettings(settings AppSettings) error {
+	log.Printf("Updating application settings: %+v", settings)
+
+	// Validate settings first
+	if err := a.validateSettings(settings); err != nil {
+		return fmt.Errorf("invalid settings: %w", err)
+	}
+
+	// Apply hotkeys if provided
+	if len(settings.Hotkeys) > 0 {
+		// Convert interface{} map to proper hotkey format
+		hotkeys := make(map[string]*types.Hotkey)
+		for action, hotkeyData := range settings.Hotkeys {
+			if hotkeyMap, ok := hotkeyData.(map[string]interface{}); ok {
+				hotkey := &types.Hotkey{}
+
+				if modifiers, ok := hotkeyMap["modifiers"].([]interface{}); ok {
+					for _, mod := range modifiers {
+						if modStr, ok := mod.(string); ok {
+							hotkey.Modifiers = append(hotkey.Modifiers, modStr)
+						}
+					}
+				}
+
+				if key, ok := hotkeyMap["key"].(string); ok {
+					hotkey.Key = key
+				}
+
+				if enabled, ok := hotkeyMap["enabled"].(bool); ok {
+					hotkey.Enabled = enabled
+				}
+
+				hotkeys[action] = hotkey
+			}
+		}
+
+		// Update hotkeys
+		err := a.UpdateHotkeys(hotkeys)
+		if err != nil {
+			log.Printf("Failed to update hotkeys: %v", err)
+			return fmt.Errorf("failed to update hotkeys: %w", err)
+		}
+	}
+
+	// Now update expansion manager settings by creating core settings
+	if a.expansionManager != nil {
+		// Create core settings with the new values
+		coreSettings := types.Settings{
+			Prefix:           settings.TriggerPrefix,
+			ExpandKey:        settings.ExpandKey,
+			StrictBoundaries: settings.StrictBoundaries,
+			// Default values for other fields
+			Locale:            "en-US",
+			DefaultDateFormat: "2006-01-02",
+			Timezone:          "Local",
+			HistoryEnabled:    true,
+			HistoryLimit:      200,
+			PinForSensitive:   false,
+		}
+
+		// Update the expansion manager using existing UpdateSettings method
+		// This will update the keyboard hook with the new prefix, expand key, etc.
+		err := a.expansionManager.UpdateSettingsWithValues(coreSettings)
+		if err != nil {
+			log.Printf("Failed to update expansion manager settings: %v", err)
+			return fmt.Errorf("failed to update expansion manager: %w", err)
+		}
+
+		// Update expansion method
+		if settings.ExpansionMethod == "clipboard" {
+			a.expansionManager.SetExpansionMethod(expansion.MethodClipboard)
+		} else {
+			a.expansionManager.SetExpansionMethod(expansion.MethodDirect)
+		}
+
+		log.Printf("Applied settings: prefix=%s, expandKey=%s, method=%s, strictBoundaries=%t",
+			settings.TriggerPrefix, settings.ExpandKey, settings.ExpansionMethod, settings.StrictBoundaries)
+	}
+
+	// Apply suggestions settings
+	a.SetSuggestionsEnabled(settings.SuggestionsEnabled)
+	log.Printf("Applied suggestions enabled: %t", settings.SuggestionsEnabled)
+
+	// Store the current settings
+	a.currentSettings = settings
+
+	// Save AppSettings to disk
+	err := a.saveAppSettings(settings)
+	if err != nil {
+		log.Printf("Failed to save app settings: %v", err)
+		return fmt.Errorf("failed to save app settings: %w", err)
+	}
+
+	log.Println("Settings updated and applied successfully")
+	return nil
+}
+
+// GetDefaultSettings returns the default application settings
+func (a *App) GetDefaultSettings() AppSettings {
+	return AppSettings{
+		TriggerPrefix:       ":",
+		ExpandKey:           "Tab",
+		TypingTimeout:       2000,
+		ExpansionMethod:     "direct",
+		SuggestionsEnabled:  true,
+		MinQueryLength:      1,
+		MaxSuggestions:      10,
+		SuggestionDelay:     200,
+		SuggestionHideDelay: 1000,
+		StrictBoundaries:    true,
+		PauseOnFailure:      false,
+		BufferSize:          100,
+		CaseSensitive:       false,
+	}
+}
+
+// ExportSettings exports all settings as JSON
+func (a *App) ExportSettings() (string, error) {
+	log.Println("Exporting settings")
+
+	settings := a.GetAppSettings()
+	hotkeys := a.GetHotkeys()
+
+	// Convert hotkeys to interface{} for JSON
+	hotkeyMap := make(map[string]interface{})
+	for action, hotkey := range hotkeys {
+		hotkeyMap[action] = map[string]interface{}{
+			"modifiers": hotkey.Modifiers,
+			"key":       hotkey.Key,
+			"enabled":   hotkey.Enabled,
+		}
+	}
+	settings.Hotkeys = hotkeyMap
+
+	jsonData, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal settings: %w", err)
+	}
+
+	return string(jsonData), nil
+}
+
+// ImportSettings imports settings from JSON
+func (a *App) ImportSettings(jsonData string) error {
+	log.Println("Importing settings")
+
+	var settings AppSettings
+	err := json.Unmarshal([]byte(jsonData), &settings)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal settings: %w", err)
+	}
+
+	// Validate settings
+	err = a.validateSettings(settings)
+	if err != nil {
+		return fmt.Errorf("invalid settings: %w", err)
+	}
+
+	// Apply settings
+	return a.UpdateSettings(settings)
+}
+
+// validateSettings validates the settings values
+func (a *App) validateSettings(settings AppSettings) error {
+	// Validate trigger prefix
+	if len(settings.TriggerPrefix) != 1 {
+		return fmt.Errorf("trigger prefix must be a single character")
+	}
+
+	// Validate expand key
+	validExpandKeys := []string{"Tab", "Enter", "Space"}
+	valid := false
+	for _, key := range validExpandKeys {
+		if settings.ExpandKey == key {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("expand key must be one of: %v", validExpandKeys)
+	}
+
+	// Validate ranges
+	if settings.TypingTimeout < 0 || settings.TypingTimeout > 30000 {
+		return fmt.Errorf("typing timeout must be between 0 and 30000 ms")
+	}
+
+	if settings.MinQueryLength < 1 || settings.MinQueryLength > 10 {
+		return fmt.Errorf("minimum query length must be between 1 and 10")
+	}
+
+	if settings.MaxSuggestions < 1 || settings.MaxSuggestions > 50 {
+		return fmt.Errorf("maximum suggestions must be between 1 and 50")
+	}
+
+	if settings.SuggestionDelay < 0 || settings.SuggestionDelay > 5000 {
+		return fmt.Errorf("suggestion delay must be between 0 and 5000 ms")
+	}
+
+	if settings.BufferSize < 10 || settings.BufferSize > 1000 {
+		return fmt.Errorf("buffer size must be between 10 and 1000")
+	}
+
+	return nil
+}
+
+// saveAppSettings saves the application settings to a file
+func (a *App) saveAppSettings(settings AppSettings) error {
+	// Get user home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	// Create snipq config directory if it doesn't exist
+	configDir := filepath.Join(homeDir, ".snipq")
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	// Save settings as JSON
+	settingsPath := filepath.Join(configDir, "app-settings.json")
+	data, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal settings: %w", err)
+	}
+
+	if err := os.WriteFile(settingsPath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write settings file: %w", err)
+	}
+
+	log.Printf("App settings saved to: %s", settingsPath)
+	return nil
+}
+
+// loadAppSettings loads the application settings from a file
+func (a *App) loadAppSettings() (AppSettings, error) {
+	// Get user home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return a.GetDefaultSettings(), fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	// Load settings from JSON file
+	settingsPath := filepath.Join(homeDir, ".snipq", "app-settings.json")
+	data, err := os.ReadFile(settingsPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("App settings file not found, using defaults")
+			return a.GetDefaultSettings(), nil
+		}
+		return a.GetDefaultSettings(), fmt.Errorf("failed to read settings file: %w", err)
+	}
+
+	var settings AppSettings
+	if err := json.Unmarshal(data, &settings); err != nil {
+		log.Printf("Failed to parse settings file, using defaults: %v", err)
+		return a.GetDefaultSettings(), nil
+	}
+
+	log.Printf("App settings loaded from: %s", settingsPath)
+	return settings, nil
 }

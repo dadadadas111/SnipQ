@@ -26,8 +26,20 @@ export function ExpandSnippet(arg1) {
   return window['go']['main']['App']['ExpandSnippet'](arg1);
 }
 
+export function ExportSettings() {
+  return window['go']['main']['App']['ExportSettings']();
+}
+
+export function GetAppSettings() {
+  return window['go']['main']['App']['GetAppSettings']();
+}
+
 export function GetDefaultHotkeys() {
   return window['go']['main']['App']['GetDefaultHotkeys']();
+}
+
+export function GetDefaultSettings() {
+  return window['go']['main']['App']['GetDefaultSettings']();
 }
 
 export function GetExpansionBuffer() {
@@ -72,6 +84,10 @@ export function Greet(arg1) {
 
 export function HideWindow() {
   return window['go']['main']['App']['HideWindow']();
+}
+
+export function ImportSettings(arg1) {
+  return window['go']['main']['App']['ImportSettings'](arg1);
 }
 
 export function IsExpansionEnabled() {
@@ -128,6 +144,10 @@ export function ToggleWindow() {
 
 export function UpdateHotkeys(arg1) {
   return window['go']['main']['App']['UpdateHotkeys'](arg1);
+}
+
+export function UpdateSettings(arg1) {
+  return window['go']['main']['App']['UpdateSettings'](arg1);
 }
 
 export function ValidateHotkey(arg1) {

@@ -36,11 +36,12 @@ type SuggestionManager struct {
 	selectionHandler  SelectionHandler
 
 	// Settings
-	enabled        bool
-	minQueryLength int
-	maxSuggestions int
-	showDelay      time.Duration
-	hideDelay      time.Duration
+	enabled         bool
+	minQueryLength  int
+	maxSuggestions  int
+	showDelay       time.Duration
+	hideDelay       time.Duration
+	currentSettings types.Settings // Store current settings
 
 	// State
 	currentQuery       string
@@ -61,6 +62,12 @@ func NewSuggestionManager(engine *core.Engine) *SuggestionManager {
 		showDelay:      200 * time.Millisecond,
 		hideDelay:      1000 * time.Millisecond,
 		selectedIndex:  -1,
+		// Initialize with default settings
+		currentSettings: types.Settings{
+			Prefix:           ":",
+			ExpandKey:        "Tab",
+			StrictBoundaries: true,
+		},
 	}
 
 	// Create popup window
@@ -95,6 +102,14 @@ func (sm *SuggestionManager) SetEnabled(enabled bool) {
 	}
 
 	log.Printf("[SUGGESTIONS] Suggestions %s", map[bool]string{true: "enabled", false: "disabled"}[enabled])
+}
+
+// UpdateSettings updates the suggestion settings with provided values
+func (sm *SuggestionManager) UpdateSettings(settings types.Settings) {
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+	sm.currentSettings = settings
+	log.Printf("[SUGGESTIONS] Settings updated with prefix=%s", settings.Prefix)
 }
 
 // IsEnabled returns whether suggestions are enabled
@@ -151,17 +166,17 @@ func (sm *SuggestionManager) extractTrigger(buffer string) string {
 		return ""
 	}
 
-	// Look for the last occurrence of ':'
-	lastColonIndex := strings.LastIndex(buffer, ":")
-	if lastColonIndex == -1 {
+	// Look for the last occurrence of the user's configured prefix
+	lastPrefixIndex := strings.LastIndex(buffer, sm.currentSettings.Prefix)
+	if lastPrefixIndex == -1 {
 		return ""
 	}
 
-	// Extract everything from the last ':' to the end
-	trigger := buffer[lastColonIndex:]
+	// Extract everything from the last prefix to the end
+	trigger := buffer[lastPrefixIndex:]
 
-	// Check if this looks like a valid trigger (no spaces after colon)
-	if strings.Contains(trigger[1:], " ") {
+	// Check if this looks like a valid trigger (no spaces after prefix)
+	if len(trigger) > 1 && strings.Contains(trigger[1:], " ") {
 		return ""
 	}
 
@@ -190,19 +205,21 @@ func (sm *SuggestionManager) updateSuggestions(query string) {
 	}
 
 	sm.currentSuggestions = suggestions
-	sm.selectedIndex = -1
 
+	// Auto-select first suggestion if available, otherwise no selection
 	if len(suggestions) > 0 {
+		sm.selectedIndex = 0 // Auto-select first item
 		sm.showSuggestions(suggestions, query)
 	} else {
+		sm.selectedIndex = -1 // No selection when no suggestions
 		sm.hideSuggestions()
 	}
 }
 
 // fetchSuggestions retrieves matching snippets for the query
 func (sm *SuggestionManager) fetchSuggestions(query string) []SuggestionItem {
-	// Remove the ':' prefix for matching
-	searchQuery := strings.TrimPrefix(query, ":")
+	// Remove the prefix for matching using current settings
+	searchQuery := strings.TrimPrefix(query, sm.currentSettings.Prefix)
 	searchQuery = strings.ToLower(searchQuery)
 
 	var suggestions []SuggestionItem
@@ -225,6 +242,9 @@ func (sm *SuggestionManager) fetchSuggestions(query string) []SuggestionItem {
 		for _, snippet := range snippets {
 			// Check if snippet matches query
 			if sm.matchesQuery(snippet, searchQuery) {
+				// Convert vault trigger to user's preferred prefix for display
+				displayTrigger := sm.convertTriggerToUserPrefix(snippet.Trigger)
+
 				// Generate preview
 				preview, err := sm.generatePreview(snippet)
 				if err != nil {
@@ -232,7 +252,7 @@ func (sm *SuggestionManager) fetchSuggestions(query string) []SuggestionItem {
 				}
 
 				suggestion := SuggestionItem{
-					Trigger:     snippet.Trigger,
+					Trigger:     displayTrigger, // Show with user's preferred prefix
 					Name:        snippet.Name,
 					Description: snippet.Description,
 					GroupID:     snippet.GroupID,
@@ -263,9 +283,10 @@ func (sm *SuggestionManager) matchesQuery(snippet types.Snippet, query string) b
 		return true
 	}
 
-	// Check trigger (remove ':' prefix for comparison)
-	trigger := strings.TrimPrefix(strings.ToLower(snippet.Trigger), ":")
-	if strings.HasPrefix(trigger, query) {
+	// Check trigger (normalize both snippet trigger and query - always use ":" for vault lookup)
+	// Snippet triggers in vault use ":" prefix, so normalize them by removing ":"
+	normalizedSnippetTrigger := strings.TrimPrefix(strings.ToLower(snippet.Trigger), ":")
+	if strings.HasPrefix(normalizedSnippetTrigger, query) {
 		return true
 	}
 
@@ -309,12 +330,22 @@ func (sm *SuggestionManager) showSuggestions(suggestions []SuggestionItem, query
 		sm.isVisible = true
 		sm.popup.Show(suggestions, query)
 
+		// Set the current selection (if any)
+		if sm.selectedIndex >= 0 && sm.selectedIndex < len(suggestions) {
+			sm.popup.SetSelection(sm.selectedIndex)
+		}
+
 		// Call handler if set
 		if sm.suggestionHandler != nil {
 			go sm.suggestionHandler(suggestions, query)
 		}
 	} else {
 		sm.popup.Update(suggestions, query)
+
+		// Set the current selection (if any)
+		if sm.selectedIndex >= 0 && sm.selectedIndex < len(suggestions) {
+			sm.popup.SetSelection(sm.selectedIndex)
+		}
 
 		// Call handler if set
 		if sm.suggestionHandler != nil {
@@ -470,4 +501,20 @@ func (sm *SuggestionManager) Destroy() {
 	if sm.popup != nil {
 		sm.popup.Destroy()
 	}
+}
+
+// convertTriggerToUserPrefix converts vault trigger (with ":") to user's preferred prefix
+func (sm *SuggestionManager) convertTriggerToUserPrefix(vaultTrigger string) string {
+	if sm.currentSettings.Prefix == ":" {
+		// Already using standard prefix, no conversion needed
+		return vaultTrigger
+	}
+
+	// Replace ":" prefix with user's preferred prefix
+	if strings.HasPrefix(vaultTrigger, ":") {
+		return sm.currentSettings.Prefix + strings.TrimPrefix(vaultTrigger, ":")
+	}
+
+	// If trigger doesn't start with ":", return as-is
+	return vaultTrigger
 }

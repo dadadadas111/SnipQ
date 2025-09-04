@@ -69,9 +69,7 @@
 
 /* Hotkeys Page Styles */
 .hotkeys-page {
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 2rem 1rem;
     flex: 1;
     overflow-y: auto;
 }
@@ -907,3 +905,4 @@
     gap: 0.5rem;
     flex-wrap: wrap;
 }
+

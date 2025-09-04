@@ -1,3 +1,46 @@
+export namespace main {
+	
+	export class AppSettings {
+	    triggerPrefix: string;
+	    expandKey: string;
+	    typingTimeout: number;
+	    expansionMethod: string;
+	    suggestionsEnabled: boolean;
+	    minQueryLength: number;
+	    maxSuggestions: number;
+	    suggestionDelay: number;
+	    suggestionHideDelay: number;
+	    strictBoundaries: boolean;
+	    pauseOnFailure: boolean;
+	    bufferSize: number;
+	    caseSensitive: boolean;
+	    hotkeys?: Record<string, any>;
+	
+	    static createFrom(source: any = {}) {
+	        return new AppSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.triggerPrefix = source["triggerPrefix"];
+	        this.expandKey = source["expandKey"];
+	        this.typingTimeout = source["typingTimeout"];
+	        this.expansionMethod = source["expansionMethod"];
+	        this.suggestionsEnabled = source["suggestionsEnabled"];
+	        this.minQueryLength = source["minQueryLength"];
+	        this.maxSuggestions = source["maxSuggestions"];
+	        this.suggestionDelay = source["suggestionDelay"];
+	        this.suggestionHideDelay = source["suggestionHideDelay"];
+	        this.strictBoundaries = source["strictBoundaries"];
+	        this.pauseOnFailure = source["pauseOnFailure"];
+	        this.bufferSize = source["bufferSize"];
+	        this.caseSensitive = source["caseSensitive"];
+	        this.hotkeys = source["hotkeys"];
+	    }
+	}
+
+}
+
 export namespace types {
 	
 	export class Group {
