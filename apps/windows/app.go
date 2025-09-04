@@ -548,3 +548,30 @@ func (a *App) SetExpansionEnabled(enabled bool) {
 func (a *App) IsExpansionEnabled() bool {
 	return a.expansionManager.IsEnabled()
 }
+
+// Suggestion Management API Methods
+
+// IsSuggestionsEnabled returns whether suggestions are enabled
+func (a *App) IsSuggestionsEnabled() bool {
+	return a.expansionManager.IsSuggestionsEnabled()
+}
+
+// SetSuggestionsEnabled enables or disables suggestions
+func (a *App) SetSuggestionsEnabled(enabled bool) {
+	a.expansionManager.SetSuggestionsEnabled(enabled)
+}
+
+// SelectNextSuggestion selects the next suggestion
+func (a *App) SelectNextSuggestion() {
+	a.expansionManager.SelectNextSuggestion()
+}
+
+// SelectPreviousSuggestion selects the previous suggestion
+func (a *App) SelectPreviousSuggestion() {
+	a.expansionManager.SelectPreviousSuggestion()
+}
+
+// AcceptSelectedSuggestion accepts the currently selected suggestion
+func (a *App) AcceptSelectedSuggestion() bool {
+	return a.expansionManager.AcceptSelectedSuggestion()
+}

@@ -34,6 +34,10 @@ const (
 	VK_0       = 0x30
 	VK_9       = 0x39
 
+	// Arrow keys for suggestion navigation
+	VK_UP   = 0x26
+	VK_DOWN = 0x28
+
 	// Special characters
 	VK_OEM_1      = 0xBA // ';:' key
 	VK_OEM_PLUS   = 0xBB // '=+' key
@@ -84,18 +88,26 @@ type MSG struct {
 // TriggerHandler is called when a trigger is detected
 type TriggerHandler func(trigger string)
 
+// BufferUpdateHandler is called when the buffer content changes
+type BufferUpdateHandler func(buffer string)
+
+// NavigationHandler is called when navigation events occur
+type NavigationHandler func(direction string) bool
+
 // KeyboardHook manages the low-level keyboard hook
 type KeyboardHook struct {
-	mu          sync.RWMutex
-	hook        uintptr
-	running     bool
-	buffer      strings.Builder
-	lastKeyTime time.Time
-	prefix      string
-	expandKey   string
-	handler     TriggerHandler
-	done        chan bool
-	bufferMutex sync.Mutex
+	mu            sync.RWMutex
+	hook          uintptr
+	running       bool
+	buffer        strings.Builder
+	lastKeyTime   time.Time
+	prefix        string
+	expandKey     string
+	handler       TriggerHandler
+	bufferHandler BufferUpdateHandler
+	navHandler    NavigationHandler
+	done          chan bool
+	bufferMutex   sync.Mutex
 
 	// Settings
 	strictBoundaries bool
@@ -120,6 +132,20 @@ func (kh *KeyboardHook) SetTriggerHandler(handler TriggerHandler) {
 	kh.mu.Lock()
 	defer kh.mu.Unlock()
 	kh.handler = handler
+}
+
+// SetBufferHandler sets the handler for buffer updates
+func (kh *KeyboardHook) SetBufferHandler(handler BufferUpdateHandler) {
+	kh.mu.Lock()
+	defer kh.mu.Unlock()
+	kh.bufferHandler = handler
+}
+
+// SetNavigationHandler sets the handler for navigation events
+func (kh *KeyboardHook) SetNavigationHandler(handler NavigationHandler) {
+	kh.mu.Lock()
+	defer kh.mu.Unlock()
+	kh.navHandler = handler
 }
 
 // UpdateSettings updates the hook settings
@@ -309,6 +335,26 @@ func (kh *KeyboardHook) processKey(vkCode uint32) bool {
 
 	// Handle special keys
 	switch vkCode {
+	case VK_UP:
+		// Handle up arrow for suggestion navigation
+		if kh.navHandler != nil {
+			// Try to handle as navigation, suppress key if handled
+			if kh.navHandler("up") {
+				return true // Suppress the key to prevent cursor movement
+			}
+		}
+		return false
+
+	case VK_DOWN:
+		// Handle down arrow for suggestion navigation
+		if kh.navHandler != nil {
+			// Try to handle as navigation, suppress key if handled
+			if kh.navHandler("down") {
+				return true // Suppress the key to prevent cursor movement
+			}
+		}
+		return false
+
 	case VK_BACK:
 		// Remove last character from buffer
 		if kh.buffer.Len() > 0 {
@@ -322,12 +368,24 @@ func (kh *KeyboardHook) processKey(vkCode uint32) bool {
 				}
 			}
 		}
+		// Notify buffer handler after backspace
+		kh.notifyBufferUpdate()
 		return false
 
 	case VK_RETURN, VK_SPACE:
+		// Check if Enter should be handled as suggestion acceptance
+		if vkCode == VK_RETURN && kh.navHandler != nil {
+			// Try to handle as accept, suppress key if handled
+			if kh.navHandler("accept") {
+				return true // Suppress the key
+			}
+		}
+
 		// These keys break trigger sequences
 		if kh.strictBoundaries {
 			kh.buffer.Reset()
+			// Notify buffer handler after reset
+			kh.notifyBufferUpdate()
 		}
 		return false
 
@@ -363,6 +421,9 @@ func (kh *KeyboardHook) processKey(vkCode uint32) bool {
 			kh.buffer.WriteString(content)
 		}
 	}
+
+	// Notify buffer handler
+	kh.notifyBufferUpdate()
 
 	return false
 }
@@ -523,4 +584,18 @@ func (kh *KeyboardHook) GetCurrentBuffer() string {
 	kh.bufferMutex.Lock()
 	defer kh.bufferMutex.Unlock()
 	return kh.buffer.String()
+}
+
+// notifyBufferUpdate notifies the buffer handler of buffer changes
+func (kh *KeyboardHook) notifyBufferUpdate() {
+	// Get handlers
+	kh.mu.RLock()
+	bufferHandler := kh.bufferHandler
+	kh.mu.RUnlock()
+
+	if bufferHandler != nil {
+		// Call handler in a goroutine to avoid blocking the hook
+		content := kh.buffer.String()
+		go bufferHandler(content)
+	}
 }
