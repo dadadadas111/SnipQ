@@ -2,7 +2,7 @@ import './style.css';
 import './app.css';
 
 import logo from './assets/images/logo-universal.png';
-import {GetGroups, GetSnippets, ExpandSnippet, PreviewSnippet, CreateSampleData, GetVaultInfo, GetHotkeys, GetHotkeyStatuses, UpdateHotkeys, ValidateHotkey, RefreshHotkeyStatuses, GetDefaultHotkeys, GetPauseState, TogglePause} from '../wailsjs/go/main/App';
+import {GetGroups, GetSnippets, ExpandSnippet, PreviewSnippet, CreateSampleData, GetVaultInfo, GetHotkeys, GetHotkeyStatuses, UpdateHotkeys, ValidateHotkey, RefreshHotkeyStatuses, GetDefaultHotkeys, GetPauseState, TogglePause, GetExpansionStats, TestExpansion, GetExpansionBuffer, ClearExpansionBuffer, SetExpansionEnabled, IsExpansionEnabled} from '../wailsjs/go/main/App';
 import {EventsOn} from '../wailsjs/runtime/runtime';
 
 document.querySelector('#app').innerHTML = `
@@ -22,6 +22,25 @@ document.querySelector('#app').innerHTML = `
                     <h3>Groups</h3>
                     <div id="vault-info" class="vault-info"></div>
                     <div id="groups-list" class="groups-list"></div>
+                    
+                    <div class="expansion-status">
+                        <h4>Auto-Expansion</h4>
+                        <div id="expansion-info" class="expansion-info">
+                            <div class="status-item">
+                                <span class="label">Status:</span>
+                                <span id="expansion-status" class="status-value">Loading...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="label">Buffer:</span>
+                                <code id="expansion-buffer" class="buffer-display">-</code>
+                            </div>
+                            <div class="expansion-controls">
+                                <button class="btn small" id="toggle-expansion">Toggle</button>
+                                <button class="btn small" id="clear-buffer">Clear Buffer</button>
+                                <button class="btn small" id="refresh-expansion">Refresh</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="content">
@@ -156,6 +175,10 @@ if (triggerInput) {
 // Load groups on startup
 loadGroups();
 checkVaultInfo();
+updateExpansionStatus();
+
+// Set up periodic refresh of expansion status
+setInterval(updateExpansionStatus, 2000);
 
 // Listen for hotkey events from the backend
 EventsOn("hotkey:openPalette", function() {
@@ -758,9 +781,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-hotkeys');
     const revertBtn = document.getElementById('revert-hotkeys');
     const resetBtn = document.getElementById('reset-defaults');
+    const pauseToggleBtn = document.getElementById('pause-toggle-btn');
     
     if (refreshBtn) refreshBtn.addEventListener('click', refreshHotkeyStatuses);
     if (saveBtn) saveBtn.addEventListener('click', saveHotkeys);
     if (revertBtn) revertBtn.addEventListener('click', revertHotkeys);
     if (resetBtn) resetBtn.addEventListener('click', resetToDefaults);
+    if (pauseToggleBtn) pauseToggleBtn.addEventListener('click', togglePause);
+    
+    // Expansion control buttons
+    const toggleExpansionBtn = document.getElementById('toggle-expansion');
+    const clearBufferBtn = document.getElementById('clear-buffer');
+    const refreshExpansionBtn = document.getElementById('refresh-expansion');
+    
+    if (toggleExpansionBtn) toggleExpansionBtn.addEventListener('click', toggleExpansion);
+    if (clearBufferBtn) clearBufferBtn.addEventListener('click', clearExpansionBuffer);
+    if (refreshExpansionBtn) refreshExpansionBtn.addEventListener('click', updateExpansionStatus);
 });
+
+// Expansion Status Functions
+async function updateExpansionStatus() {
+    try {
+        const [stats, enabled] = await Promise.all([
+            GetExpansionStats(),
+            IsExpansionEnabled()
+        ]);
+        
+        const statusElement = document.getElementById('expansion-status');
+        const bufferElement = document.getElementById('expansion-buffer');
+        
+        if (statusElement) {
+            statusElement.textContent = enabled ? 'Enabled' : 'Disabled';
+            statusElement.className = `status-value ${enabled ? 'enabled' : 'disabled'}`;
+        }
+        
+        if (bufferElement) {
+            const buffer = stats.currentBuffer || '';
+            bufferElement.textContent = buffer || '-';
+            bufferElement.title = buffer; // Show full buffer on hover
+        }
+        
+    } catch (error) {
+        console.error('Error updating expansion status:', error);
+    }
+}
+
+async function toggleExpansion() {
+    try {
+        const currentState = await IsExpansionEnabled();
+        await SetExpansionEnabled(!currentState);
+        updateExpansionStatus();
+        console.log('Expansion toggled to:', !currentState);
+    } catch (error) {
+        console.error('Error toggling expansion:', error);
+    }
+}
+
+async function clearExpansionBuffer() {
+    try {
+        await ClearExpansionBuffer();
+        updateExpansionStatus();
+        console.log('Expansion buffer cleared');
+    } catch (error) {
+        console.error('Error clearing expansion buffer:', error);
+    }
+}

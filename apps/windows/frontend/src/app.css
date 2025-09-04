@@ -836,3 +836,74 @@
 }
 
 /* Remove duplicate .btn.small rule above, keep unified version */
+
+/* Expansion Status Styles */
+.expansion-status {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.expansion-status h4 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.expansion-info {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.status-item .label {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.status-value {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.status-value.enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-value.disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.buffer-display {
+    background: #e9ecef;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #495057;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.expansion-controls {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}

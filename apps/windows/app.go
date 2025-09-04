@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"snipq-windows/internal/expansion"
 	"snipq-windows/internal/hotkey"
 
 	"github.com/snipq/core/pkg/core"
@@ -15,11 +16,12 @@ import (
 
 // App struct
 type App struct {
-	ctx           context.Context
-	engine        *core.Engine
-	trayManager   *TrayManager
-	hotkeyManager *hotkey.Manager
-	isPaused      bool
+	ctx              context.Context
+	engine           *core.Engine
+	trayManager      *TrayManager
+	hotkeyManager    *hotkey.Manager
+	expansionManager *expansion.ExpansionManager
+	isPaused         bool
 }
 
 // NewApp creates a new App application struct
@@ -30,6 +32,7 @@ func NewApp() *App {
 		isPaused:      false,
 	}
 	app.trayManager = NewTrayManager(app)
+	app.expansionManager = expansion.NewExpansionManager(app.engine)
 
 	// Set up hotkey event handler
 	app.hotkeyManager.SetEventHandler(app.handleHotkeyEvent)
@@ -134,6 +137,14 @@ func (a *App) startup(ctx context.Context) {
 	err = a.hotkeyManager.StartListening()
 	if err != nil {
 		fmt.Printf("Failed to start hotkey listening: %v\n", err)
+	}
+
+	// Start expansion manager for automatic snippet expansion
+	err = a.expansionManager.Start()
+	if err != nil {
+		fmt.Printf("Failed to start expansion manager: %v\n", err)
+	} else {
+		fmt.Printf("Expansion manager started successfully\n")
 	}
 }
 
@@ -376,6 +387,7 @@ func (a *App) ToggleWindow() {
 func (a *App) ExitApp() {
 	a.hotkeyManager.StopListening()
 	a.hotkeyManager.UnregisterAll()
+	a.expansionManager.Stop()
 	a.trayManager.ExitApp()
 }
 
@@ -393,6 +405,10 @@ func (a *App) handleHotkeyEvent(action string) {
 	case "togglePause":
 		a.isPaused = !a.isPaused
 		fmt.Printf("[APP] Toggling pause via hotkey: %t\n", a.isPaused)
+
+		// Also pause/resume the expansion manager
+		a.expansionManager.SetEnabled(!a.isPaused)
+
 		runtime.EventsEmit(a.ctx, "hotkey:pauseToggled", map[string]interface{}{
 			"paused": a.isPaused,
 		})
@@ -491,8 +507,44 @@ func (a *App) GetPauseState() bool {
 func (a *App) TogglePause() bool {
 	a.isPaused = !a.isPaused
 	fmt.Printf("[APP] Toggling pause via UI: %t\n", a.isPaused)
+
+	// Also pause/resume the expansion manager
+	a.expansionManager.SetEnabled(!a.isPaused)
+
 	runtime.EventsEmit(a.ctx, "hotkey:pauseToggled", map[string]interface{}{
 		"paused": a.isPaused,
 	})
 	return a.isPaused
+}
+
+// Expansion Management API Methods
+
+// GetExpansionStats returns statistics about the expansion manager
+func (a *App) GetExpansionStats() map[string]interface{} {
+	return a.expansionManager.GetStats()
+}
+
+// TestExpansion manually tests snippet expansion
+func (a *App) TestExpansion(trigger string) error {
+	return a.expansionManager.TestExpansion(trigger)
+}
+
+// GetExpansionBuffer returns the current keyboard buffer
+func (a *App) GetExpansionBuffer() string {
+	return a.expansionManager.GetCurrentBuffer()
+}
+
+// ClearExpansionBuffer clears the keyboard buffer
+func (a *App) ClearExpansionBuffer() {
+	a.expansionManager.ClearBuffer()
+}
+
+// SetExpansionEnabled enables or disables automatic expansion
+func (a *App) SetExpansionEnabled(enabled bool) {
+	a.expansionManager.SetEnabled(enabled)
+}
+
+// IsExpansionEnabled returns whether automatic expansion is enabled
+func (a *App) IsExpansionEnabled() bool {
+	return a.expansionManager.IsEnabled()
 }
