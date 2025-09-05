@@ -20,10 +20,13 @@ export class EventManager {
             // Switch to main tab and focus input
             if (this.snippetTester) {
                 // Trigger tab switch via navigation manager
-                document.querySelector('[data-tab="main"]').click();
-                setTimeout(() => {
-                    this.snippetTester.focusInput();
-                }, 100);
+                const mainTabElement = document.querySelector('[data-tab="main"]');
+                if (mainTabElement) {
+                    mainTabElement.click();
+                    setTimeout(() => {
+                        this.snippetTester.focusInput();
+                    }, 100);
+                }
             }
         });
 

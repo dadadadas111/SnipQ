@@ -17,6 +17,9 @@ export class HotkeyManager {
         this.hotkeyStatuses = {};
         this.isRecording = false;
         this.recordingAction = null;
+        this._hotkeyModalOpen = false;
+        this._currentModal = null;
+        this._escapeHandler = null;
     }
 
     init() {
@@ -240,7 +243,14 @@ export class HotkeyManager {
 
     // Hotkey Recording Modal
     showHotkeyRecordingModal(action, callback = null) {
+        // Re-entrancy guard: return early if modal already open
+        if (this._hotkeyModalOpen) {
+            console.log('Modal already open, ignoring request');
+            return;
+        }
+        
         console.log(`Showing recording modal for ${action}`);
+        this._hotkeyModalOpen = true;
         
         // Get the friendly action name
         const actions = {
@@ -252,10 +262,16 @@ export class HotkeyManager {
         
         const modal = document.createElement('div');
         modal.className = 'hotkey-modal';
+        // Make modal focusable and accessible
+        modal.tabIndex = -1;
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'modal-title');
+        
         modal.innerHTML = `
             <div class="hotkey-modal-content" style="position: relative;">
                 <button id="close-modal-x" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.7rem; color: #495057; cursor: pointer; z-index: 10;" title="Close">&times;</button>
-                <h3>Record Hotkey for ${actionName}</h3>
+                <h3 id="modal-title">Record Hotkey for ${actionName}</h3>
                 <p>Press your desired key combination. Use Ctrl, Alt, Shift, or Win + another key.</p>
                 <div class="recording-display listening" id="recording-display">
                     Press your hotkey combination...
@@ -268,6 +284,10 @@ export class HotkeyManager {
         `;
         
         document.body.appendChild(modal);
+        this._currentModal = modal;
+        
+        // Focus the modal after appending
+        modal.focus();
         
         const recordingDisplay = modal.querySelector('#recording-display');
         const recordingError = modal.querySelector('#recording-error');
@@ -322,12 +342,34 @@ export class HotkeyManager {
         };
         
         const closeModal = () => {
+            // Remove all event listeners
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.removeChild(modal);
+            if (this._escapeHandler) {
+                document.removeEventListener('keydown', this._escapeHandler);
+                this._escapeHandler = null;
+            }
+            
+            // Clear re-entrancy flag and current modal reference
+            this._hotkeyModalOpen = false;
+            this._currentModal = null;
+            
+            // Remove modal from DOM
+            if (modal.parentNode) {
+                document.body.removeChild(modal);
+            }
+        };
+        
+        // Escape key handler (separate from the recording handler)
+        this._escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
         };
         
         // Event listeners
         document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keydown', this._escapeHandler);
         
         saveBtn.addEventListener('click', () => {
             if (recordedHotkey) {
@@ -345,9 +387,6 @@ export class HotkeyManager {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
-        
-        // Focus the modal for key capture
-        modal.focus();
     }
 
     showRecordingError(message, errorElement) {

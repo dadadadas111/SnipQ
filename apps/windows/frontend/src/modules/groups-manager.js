@@ -45,24 +45,53 @@ export class GroupsManager {
                     }
                     
                     groups.forEach(group => {
+                        // Create container div with class 'group-item'
                         const groupElement = document.createElement('div');
                         groupElement.className = 'group-item';
-                        groupElement.innerHTML = `
-                            <div class="group-header" onclick="window.groupsManager.loadSnippets('${group.id}')" data-group-id="${group.id}">
-                                <span>${group.icon || '📁'} ${group.name}</span>
-                                <span class="group-id">${group.id}</span>
-                            </div>
-                        `;
+                        
+                        // Create 'group-header' div
+                        const groupHeader = document.createElement('div');
+                        groupHeader.className = 'group-header';
+                        groupHeader.dataset.groupId = group.id;
+                        
+                        // Create and safely set icon and name span
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = `${group.icon || '📁'} ${group.name}`;
+                        
+                        // Create and safely set ID span
+                        const idSpan = document.createElement('span');
+                        idSpan.className = 'group-id';
+                        idSpan.textContent = group.id;
+                        
+                        // Append spans to header
+                        groupHeader.appendChild(nameSpan);
+                        groupHeader.appendChild(idSpan);
+                        
+                        // Attach click handler via addEventListener
+                        groupHeader.addEventListener('click', () => this.loadSnippets(group.id));
+                        
+                        // Append header to container
+                        groupElement.appendChild(groupHeader);
+                        
+                        // Append container to groups list
                         this.groupsList.appendChild(groupElement);
                     });
                 })
                 .catch((err) => {
                     console.error('Error loading groups:', err);
-                    this.groupsList.innerHTML = `<div class="error">Error loading groups: ${err}</div>`;
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.textContent = 'Error loading groups: ' + String(err);
+                    this.groupsList.innerHTML = '';
+                    this.groupsList.appendChild(errorDiv);
                 });
         } catch (err) {
             console.error('Exception loading groups:', err);
-            this.groupsList.innerHTML = `<div class="error">Exception: ${err}</div>`;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = 'Exception: ' + String(err);
+            this.groupsList.innerHTML = '';
+            this.groupsList.appendChild(errorDiv);
         }
     }
 
@@ -104,11 +133,19 @@ export class GroupsManager {
                 })
                 .catch((err) => {
                     console.error('Error loading snippets:', err);
-                    this.snippetsList.innerHTML = `<div class="error">Error loading snippets: ${err}</div>`;
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.textContent = 'Error loading snippets: ' + String(err);
+                    this.snippetsList.innerHTML = '';
+                    this.snippetsList.appendChild(errorDiv);
                 });
         } catch (err) {
             console.error('Exception loading snippets:', err);
-            this.snippetsList.innerHTML = `<div class="error">Exception: ${err}</div>`;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = 'Exception: ' + String(err);
+            this.snippetsList.innerHTML = '';
+            this.snippetsList.appendChild(errorDiv);
         }
     }
 
@@ -131,11 +168,19 @@ export class GroupsManager {
                 })
                 .catch((err) => {
                     console.error('Error getting vault info:', err);
-                    this.vaultInfo.innerHTML = `<div class="error">Error: ${err}</div>`;
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.textContent = 'Error: ' + String(err);
+                    this.vaultInfo.innerHTML = '';
+                    this.vaultInfo.appendChild(errorDiv);
                 });
         } catch (err) {
             console.error('Exception getting vault info:', err);
-            this.vaultInfo.innerHTML = `<div class="error">Exception: ${err}</div>`;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = 'Exception: ' + String(err);
+            this.vaultInfo.innerHTML = '';
+            this.vaultInfo.appendChild(errorDiv);
         }
     }
 
@@ -151,11 +196,19 @@ export class GroupsManager {
                 })
                 .catch((err) => {
                     console.error('Error creating sample data:', err);
-                    this.vaultInfo.innerHTML = `<div class="error">Error creating sample data: ${err}</div>`;
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.textContent = 'Error creating sample data: ' + String(err);
+                    this.vaultInfo.innerHTML = '';
+                    this.vaultInfo.appendChild(errorDiv);
                 });
         } catch (err) {
             console.error('Exception creating sample data:', err);
-            this.vaultInfo.innerHTML = `<div class="error">Exception: ${err}</div>`;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = 'Exception: ' + String(err);
+            this.vaultInfo.innerHTML = '';
+            this.vaultInfo.appendChild(errorDiv);
         }
     }
 }

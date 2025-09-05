@@ -11,6 +11,13 @@ import { HotkeyManager } from './modules/hotkey-manager.js';
 import { SettingsManager } from './modules/settings-manager.js';
 import { EventManager } from './modules/event-manager.js';
 
+// Helper function to escape HTML entities to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Main Application Class
 class SnipQApp {
     constructor() {
@@ -43,22 +50,24 @@ class SnipQApp {
             
         } catch (error) {
             console.error('Error initializing app:', error);
-            this.showError('Failed to initialize application: ' + error.message);
+            this.showError('Failed to initialize application: ' + escapeHtml(error.message));
         }
     }
 
     async loadTemplate() {
         try {
-            const templateContent = await TemplateLoader.loadTemplate('./src/templates/app-template.html');
+            const templateUrl = new URL('./templates/app-template.html', import.meta.url).href;
+            const templateContent = await TemplateLoader.loadTemplate(templateUrl);
             TemplateLoader.renderTemplate('#app', templateContent);
         } catch (error) {
             console.error('Error loading template:', error);
             // Fallback to a simple error message
+            const escapedErrorMessage = escapeHtml(error.message);
             document.querySelector('#app').innerHTML = `
                 <div class="error-container">
                     <h1>Error Loading Application</h1>
                     <p>Failed to load the application template. Please refresh the page.</p>
-                    <p>Error: ${error.message}</p>
+                    <p>Error: ${escapedErrorMessage}</p>
                 </div>
             `;
             throw error;
@@ -130,10 +139,11 @@ class SnipQApp {
     }
 
     showError(message) {
+        const escapedMessage = escapeHtml(message);
         document.querySelector('#app').innerHTML = `
             <div class="error-container" style="padding: 2rem; text-align: center;">
                 <h1 style="color: #dc3545;">Application Error</h1>
-                <p style="margin: 1rem 0;">${message}</p>
+                <p style="margin: 1rem 0;">${escapedMessage}</p>
                 <button onclick="location.reload()" style="padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     Reload Application
                 </button>
