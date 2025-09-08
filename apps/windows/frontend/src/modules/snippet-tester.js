@@ -11,6 +11,7 @@ export class SnippetTester {
         this.triggerInput = document.getElementById("trigger-input");
         this.resultElement = document.getElementById("result");
         this.setupEventListeners();
+        this.setupExampleListeners();
         
         // Focus on trigger input
         if (this.triggerInput) {
@@ -36,6 +37,20 @@ export class SnippetTester {
                 }
             });
         }
+    }
+
+    setupExampleListeners() {
+        // Add click listeners to all example trigger buttons
+        const exampleButtons = document.querySelectorAll('.example-trigger');
+        exampleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const trigger = button.getAttribute('data-trigger');
+                if (trigger) {
+                    console.log('Example trigger clicked:', trigger);
+                    this.testTrigger(trigger);
+                }
+            });
+        });
     }
 
     clearField() {

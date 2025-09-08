@@ -70,6 +70,9 @@ func NewExpansionManager(engine *core.Engine) *ExpansionManager {
 	// Set up suggestion selection handler
 	em.suggestionManager.SetSelectionHandler(em.handleSuggestionSelection)
 
+	// Connect suggestion manager to keyboard hook for state synchronization
+	em.suggestionManager.SetKeyboardHook(em.keyboardHook)
+
 	return em
 }
 

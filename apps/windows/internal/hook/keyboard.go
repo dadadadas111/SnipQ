@@ -117,6 +117,9 @@ type KeyboardHook struct {
 	strictBoundaries bool
 	maxBufferSize    int
 	typingTimeout    time.Duration
+
+	// Suggestion state tracking
+	suggestionsVisible bool
 }
 
 // NewKeyboardHook creates a new keyboard hook
@@ -338,9 +341,20 @@ func (kh *KeyboardHook) processKey(vkCode uint32) bool {
 	kh.bufferMutex.Lock()
 	defer kh.bufferMutex.Unlock()
 
-	// Check for typing timeout
-	if !kh.lastKeyTime.IsZero() && now.Sub(kh.lastKeyTime) > kh.typingTimeout {
-		kh.buffer.Reset()
+	// Check for typing timeout - but only if suggestions are NOT visible
+	// When suggestions are visible, we want to preserve the buffer so the user
+	// can select a suggestion even after a longer pause
+	shouldCheckTimeout := !kh.lastKeyTime.IsZero() && now.Sub(kh.lastKeyTime) > kh.typingTimeout
+	if shouldCheckTimeout {
+		kh.mu.RLock()
+		suggestionsVisible := kh.suggestionsVisible
+		kh.mu.RUnlock()
+
+		if !suggestionsVisible {
+			// No suggestions visible, safe to clear buffer on timeout
+			kh.buffer.Reset()
+		}
+		// If suggestions are visible, keep the buffer intact regardless of timeout
 	}
 	kh.lastKeyTime = now
 
@@ -620,4 +634,18 @@ func (kh *KeyboardHook) notifyBufferUpdate() {
 		content := kh.buffer.String()
 		go bufferHandler(content)
 	}
+}
+
+// SetSuggestionsVisible updates the suggestion visibility state
+func (kh *KeyboardHook) SetSuggestionsVisible(visible bool) {
+	kh.mu.Lock()
+	defer kh.mu.Unlock()
+	kh.suggestionsVisible = visible
+}
+
+// IsSuggestionsVisible returns whether suggestions are currently visible
+func (kh *KeyboardHook) IsSuggestionsVisible() bool {
+	kh.mu.RLock()
+	defer kh.mu.RUnlock()
+	return kh.suggestionsVisible
 }

@@ -47,6 +47,76 @@
                     <div class="result" id="result">Enter a trigger above to test expansion</div>
                 </div>
                 
+                <div class="examples-section">
+                    <h3>🌟 Query Parameter Examples</h3>
+                    <p style="color: #6c757d; margin-bottom: 1rem;">Click any example to test it instantly:</p>
+                    <div class="examples-grid">
+                        <div class="example-card">
+                            <h4>Multilingual Thanks</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":ty">:ty</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=vi">:ty?lang=vi</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=ja&tone=casual">:ty?lang=ja&tone=casual</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=es&tone=formal">:ty?lang=es&tone=formal</button>
+                            </div>
+                            <p><small>Default: English neutral → Try different languages and tones</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Date Formatting</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":date">:date</button>
+                                <button class="example-trigger" data-trigger=":date?format=Monday, January 2, 2006">:date?format=Monday, January 2, 2006</button>
+                                <button class="example-trigger" data-trigger=":date?format=02/01/2006&tz=UTC">:date?format=02/01/2006&tz=UTC</button>
+                                <button class="example-trigger" data-trigger=":date?format=2006-01-02T15:04:05Z07:00">:date?format=2006-01-02T15:04:05Z07:00</button>
+                            </div>
+                            <p><small>Default: YYYY-MM-DD → Try different formats and timezones</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Email Templates</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":email">:email</button>
+                                <button class="example-trigger" data-trigger=":email?name=John&greeting=casual">:email?name=John&greeting=casual</button>
+                                <button class="example-trigger" data-trigger=":email?name=Mr. Smith&lang=vi">:email?name=Mr. Smith&lang=vi</button>
+                            </div>
+                            <p><small>Default: "there" + formal → Try different names, greetings, and languages</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>UUID Generation</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":uuid">:uuid</button>
+                                <button class="example-trigger" data-trigger=":uuid?hyphens=false">:uuid?hyphens=false</button>
+                                <button class="example-trigger" data-trigger=":uuid?upper=true">:uuid?upper=true</button>
+                                <button class="example-trigger" data-trigger=":uuid?hyphens=false&upper=true">:uuid?hyphens=false&upper=true</button>
+                            </div>
+                            <p><small>Default: lowercase with hyphens → Try different formats</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Meeting Notes</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":meeting">:meeting</button>
+                                <button class="example-trigger" data-trigger=":meeting?title=Sprint Planning">:meeting?title=Sprint Planning</button>
+                                <button class="example-trigger" data-trigger=":meeting?title=1:1 Review&format=simple">:meeting?title=1:1 Review&format=simple</button>
+                            </div>
+                            <p><small>Default: Team Meeting + detailed → Try different titles and formats</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Timestamps</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":time">:time</button>
+                                <button class="example-trigger" data-trigger=":time?type=unix">:time?type=unix</button>
+                                <button class="example-trigger" data-trigger=":time?type=readable">:time?type=readable</button>
+                                <button class="example-trigger" data-trigger=":time?type=short&tz=UTC">:time?type=short&tz=UTC</button>
+                            </div>
+                            <p><small>Default: ISO format → Try different timestamp types</small></p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="snippets-section">
                     <h3>Snippets</h3>
                     <div id="snippets-list" class="snippets-list"></div>

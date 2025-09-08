@@ -258,41 +258,131 @@ pinForSensitive: false`
 			ID:          "ty",
 			Name:        "Thank You",
 			Trigger:     ":ty",
-			Description: "Thank you message",
-			Template:    "Thank you! 😊",
-			GroupID:     "personal",
+			Description: "Multilingual thank you with tone support",
+			Defaults: map[string]any{
+				"lang": "en",
+				"tone": "neutral",
+			},
+			Template: `{{ if eq .lang "vi" }}{{ if eq .tone "casual" }}Cảm ơn bạn nha!{{ else }}Cảm ơn bạn.{{ end }}{{ else if eq .lang "ja" }}{{ if eq .tone "casual" }}ありがとう！{{ else }}ありがとうございます。{{ end }}{{ else if eq .lang "es" }}{{ if eq .tone "casual" }}¡Gracias!{{ else }}Muchas gracias.{{ end }}{{ else }}{{ if eq .tone "casual" }}Thanks!{{ else if eq .tone "formal" }}Thank you very much.{{ else }}Thank you.{{ end }}{{ end }}`,
+			GroupID:  "personal",
 		},
 		{
 			ID:          "date_today",
 			Name:        "Current Date",
-			Trigger:     ":today",
-			Description: "Insert current date",
-			Template:    "{{ date \"Monday, January 2, 2006\" \"Local\" }}",
-			GroupID:     "personal",
+			Trigger:     ":date",
+			Description: "Insert current date with customizable format and timezone",
+			Defaults: map[string]any{
+				"format": "2006-01-02",
+				"tz":     "Local",
+			},
+			Template: "{{ date .format .tz }}",
+			GroupID:  "personal",
 		},
 		{
-			ID:          "today_test",
-			Name:        "Today Test",
-			Trigger:     ":todaytest",
-			Description: "Test snippet for today prefix",
-			Template:    "This is a test snippet for today: {{ date \"2006-01-02\" \"Local\" }}",
-			GroupID:     "personal",
+			ID:          "email_template",
+			Name:        "Email Template",
+			Trigger:     ":email",
+			Description: "Professional email template with customizable greeting and signature",
+			Defaults: map[string]any{
+				"name":     "there",
+				"greeting": "formal",
+				"lang":     "en",
+			},
+			Template: `{{ if eq .lang "vi" }}{{ if eq .greeting "formal" }}Kính chào {{ .name }},{{ else }}Chào {{ .name }},{{ end }}
+
+Tôi viết email này để...
+
+{{ if eq .greeting "formal" }}Trân trọng,{{ else }}Thân ái,{{ end }}{{ else }}{{ if eq .greeting "formal" }}Dear {{ .name }},{{ else }}Hi {{ .name }},{{ end }}
+
+I'm writing to...
+
+{{ if eq .greeting "formal" }}Best regards,{{ else }}Best,{{ end }}{{ end }}
+[Your Name]`,
+			GroupID: "personal",
 		},
 		{
-			ID:          "todo_item",
-			Name:        "Todo Item",
-			Trigger:     ":todo",
-			Description: "Create a todo item",
-			Template:    "- [ ] TODO: Add your task here",
-			GroupID:     "personal",
+			ID:          "uuid_gen",
+			Name:        "UUID Generator",
+			Trigger:     ":uuid",
+			Description: "Generate UUID with optional formatting",
+			Defaults: map[string]any{
+				"hyphens": true,
+				"upper":   false,
+			},
+			Template: "{{ if .upper }}{{ upper (uuid .hyphens) }}{{ else }}{{ uuid .hyphens }}{{ end }}",
+			GroupID:  "personal",
 		},
 		{
-			ID:          "email_sig",
-			Name:        "Email Signature",
-			Trigger:     ":sig",
-			Description: "Professional email signature",
-			Template:    "Best regards,\nSnipQ User\nsnipq@example.com",
-			GroupID:     "personal",
+			ID:          "timestamp",
+			Name:        "Timestamp",
+			Trigger:     ":time",
+			Description: "Various timestamp formats",
+			Defaults: map[string]any{
+				"type": "iso",
+				"tz":   "Local",
+			},
+			Template: `{{ if eq .type "unix" }}{{ .timestamp }}{{ else if eq .type "iso" }}{{ date "2006-01-02T15:04:05Z07:00" .tz }}{{ else if eq .type "readable" }}{{ date "Monday, January 2, 2006 at 3:04 PM" .tz }}{{ else if eq .type "short" }}{{ date "01/02/2006 15:04" .tz }}{{ else }}{{ date .type .tz }}{{ end }}`,
+			GroupID:  "personal",
+		},
+		{
+			ID:          "meeting_note",
+			Name:        "Meeting Notes",
+			Trigger:     ":meeting",
+			Description: "Meeting notes template with date and attendees",
+			Defaults: map[string]any{
+				"title":     "Team Meeting",
+				"attendees": "Team Members",
+				"format":    "detailed",
+			},
+			Template: `# {{ .title }} - {{ date "January 2, 2006" "Local" }}
+
+**Attendees:** {{ .attendees }}
+**Date:** {{ date "Monday, January 2, 2006" "Local" }}
+**Time:** {{ date "3:04 PM" "Local" }}
+
+{{ if eq .format "detailed" }}## Agenda
+- 
+
+## Discussion
+- 
+
+## Action Items
+- [ ] 
+
+## Next Steps
+- {{ else }}## Notes
+- 
+
+## Actions
+- [ ] {{ end }}`,
+			GroupID: "personal",
+		},
+		{
+			ID:          "code_block",
+			Name:        "Code Block",
+			Trigger:     ":code",
+			Description: "Code block with language syntax highlighting",
+			Defaults: map[string]any{
+				"lang":  "javascript",
+				"title": "",
+			},
+			Template: `{{ if .title }}// {{ .title }}{{ end }}
+` + "```{{ .lang }}" + `
+// Your code here
+` + "```",
+			GroupID: "personal",
+		},
+		{
+			ID:          "random_data",
+			Name:        "Random Data",
+			Trigger:     ":random",
+			Description: "Generate random data for testing",
+			Defaults: map[string]any{
+				"type":  "number",
+				"count": 1,
+			},
+			Template: `{{ if eq .type "word" }}{{ random "word" }}{{ else if eq .type "uuid" }}{{ uuid true }}{{ else if eq .type "number" }}{{ random 1000 }}{{ else }}{{ random }}{{ end }}`,
+			GroupID:  "personal",
 		},
 	}
 

@@ -35,6 +35,11 @@ type SuggestionManager struct {
 	suggestionHandler SuggestionHandler
 	selectionHandler  SelectionHandler
 
+	// External components for state updates
+	keyboardHook interface {
+		SetSuggestionsVisible(bool)
+	}
+
 	// Settings
 	enabled         bool
 	minQueryLength  int
@@ -89,6 +94,13 @@ func (sm *SuggestionManager) SetSelectionHandler(handler SelectionHandler) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	sm.selectionHandler = handler
+}
+
+// SetKeyboardHook sets the keyboard hook for state synchronization
+func (sm *SuggestionManager) SetKeyboardHook(hook interface{ SetSuggestionsVisible(bool) }) {
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+	sm.keyboardHook = hook
 }
 
 // SetEnabled enables or disables suggestions
@@ -330,6 +342,11 @@ func (sm *SuggestionManager) showSuggestions(suggestions []SuggestionItem, query
 		sm.isVisible = true
 		sm.popup.Show(suggestions, query)
 
+		// Notify keyboard hook that suggestions are now visible
+		if sm.keyboardHook != nil {
+			sm.keyboardHook.SetSuggestionsVisible(true)
+		}
+
 		// Set the current selection (if any)
 		if sm.selectedIndex >= 0 && sm.selectedIndex < len(suggestions) {
 			sm.popup.SetSelection(sm.selectedIndex)
@@ -361,6 +378,11 @@ func (sm *SuggestionManager) hideSuggestions() {
 		sm.popup.Hide()
 		sm.currentSuggestions = nil
 		sm.selectedIndex = -1
+
+		// Notify keyboard hook that suggestions are now hidden
+		if sm.keyboardHook != nil {
+			sm.keyboardHook.SetSuggestionsVisible(false)
+		}
 
 		// Call handler if set
 		if sm.suggestionHandler != nil {
