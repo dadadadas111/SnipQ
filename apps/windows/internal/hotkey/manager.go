@@ -121,20 +121,30 @@ func (m *Manager) SetEventHandler(handler EventHandler) {
 func GetDefaultHotkeys() map[string]*types.Hotkey {
 	log.Println("[HOTKEY] Creating default hotkey configuration")
 	return map[string]*types.Hotkey{
-		"openPalette": {
-			Modifiers: []string{"Ctrl", "Alt"},
+		"toggleWindow": {
+			Modifiers: []string{"Ctrl", "Shift"},
+			Key:       "S",
+			Enabled:   true,
+		},
+		"toggleExpansion": {
+			Modifiers: []string{"Ctrl", "Shift"},
+			Key:       "E",
+			Enabled:   true,
+		},
+		"showSuggestions": {
+			Modifiers: []string{"Ctrl", "Shift"},
 			Key:       "Space",
 			Enabled:   true,
 		},
-		"togglePause": {
-			Modifiers: []string{"Ctrl", "Alt"},
-			Key:       "Period",
+		"quickExpand": {
+			Modifiers: []string{"Ctrl", "Shift"},
+			Key:       "Enter",
 			Enabled:   true,
 		},
-		"expandNow": {
-			Modifiers: []string{"Ctrl", "Alt"},
-			Key:       "Enter",
-			Enabled:   false, // Optional for v1
+		"focusSearch": {
+			Modifiers: []string{"Ctrl", "Shift"},
+			Key:       "F",
+			Enabled:   false, // Optional
 		},
 	}
 }

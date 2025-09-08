@@ -68,25 +68,44 @@
                 <div style="padding: 1.5rem;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label style="font-weight: 500; color: #495057;">Expand Now:</label>
+                            <label style="font-weight: 500; color: #495057;">Toggle Window:</label>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="text" id="hotkey-expand-now" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
-                                <button class="btn secondary small" onclick="recordHotkeyForSetting('expandNow', 'hotkey-expand-now')">Change</button>
+                                <input type="text" id="hotkey-toggle-window" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('toggleWindow', 'hotkey-toggle-window')">Change</button>
                             </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Show/hide the SnipQ main window</small>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label style="font-weight: 500; color: #495057;">Open Palette:</label>
+                            <label style="font-weight: 500; color: #495057;">Toggle Expansion:</label>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="text" id="hotkey-open-palette" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
-                                <button class="btn secondary small" onclick="recordHotkeyForSetting('openPalette', 'hotkey-open-palette')">Change</button>
+                                <input type="text" id="hotkey-toggle-expansion" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('toggleExpansion', 'hotkey-toggle-expansion')">Change</button>
                             </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Enable/disable automatic snippet expansion</small>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label style="font-weight: 500; color: #495057;">Toggle Pause:</label>
+                            <label style="font-weight: 500; color: #495057;">Show Suggestions:</label>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="text" id="hotkey-toggle-pause" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
-                                <button class="btn secondary small" onclick="recordHotkeyForSetting('togglePause', 'hotkey-toggle-pause')">Change</button>
+                                <input type="text" id="hotkey-show-suggestions" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('showSuggestions', 'hotkey-show-suggestions')">Change</button>
                             </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Show snippet suggestions popup</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Quick Expand:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-quick-expand" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('quickExpand', 'hotkey-quick-expand')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Immediately expand the current trigger</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Focus Search:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-focus-search" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('focusSearch', 'hotkey-focus-search')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Open window and focus on search input</small>
                         </div>
                     </div>
                 </div>

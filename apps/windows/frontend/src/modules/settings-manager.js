@@ -148,9 +148,11 @@ export class SettingsManager {
     populateHotkeysInSettings(hotkeys) {
         // Populate hotkey displays in settings
         const hotkeyInputs = {
-            'expandNow': 'hotkey-expand-now',
-            'openPalette': 'hotkey-open-palette', 
-            'togglePause': 'hotkey-toggle-pause'
+            'toggleWindow': 'hotkey-toggle-window',
+            'toggleExpansion': 'hotkey-toggle-expansion', 
+            'showSuggestions': 'hotkey-show-suggestions',
+            'quickExpand': 'hotkey-quick-expand',
+            'focusSearch': 'hotkey-focus-search'
         };
         
         Object.entries(hotkeyInputs).forEach(([action, inputId]) => {

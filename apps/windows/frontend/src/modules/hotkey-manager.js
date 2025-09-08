@@ -73,17 +73,25 @@ export class HotkeyManager {
         console.log("Rendering hotkeys table");
         
         const actions = {
-            'openPalette': {
-                name: 'Open Palette',
-                description: 'Opens the snippet search palette'
+            'toggleWindow': {
+                name: 'Toggle Window',
+                description: 'Show/hide the SnipQ main window'
             },
-            'togglePause': {
-                name: 'Toggle Pause',
-                description: 'Pauses/resumes snippet expansion'
+            'toggleExpansion': {
+                name: 'Toggle Expansion',
+                description: 'Enable/disable automatic snippet expansion'
             },
-            'expandNow': {
-                name: 'Expand Now',
-                description: 'Expands the current trigger immediately'
+            'showSuggestions': {
+                name: 'Show Suggestions',
+                description: 'Show snippet suggestions popup'
+            },
+            'quickExpand': {
+                name: 'Quick Expand',
+                description: 'Immediately expand the current trigger'
+            },
+            'focusSearch': {
+                name: 'Focus Search',
+                description: 'Open window and focus on search input'
             }
         };
         
@@ -144,7 +152,7 @@ export class HotkeyManager {
         const pauseBtnText = document.getElementById('pause-btn-text');
         
         if (pauseStatus) {
-            pauseStatus.textContent = paused ? 'Paused' : 'Active';
+            pauseStatus.textContent = paused ? 'Expansion Disabled' : 'Expansion Active';
             pauseStatus.className = `pause-indicator ${paused ? 'paused' : ''}`;
         }
         
@@ -153,7 +161,7 @@ export class HotkeyManager {
         }
         
         if (pauseBtnText) {
-            pauseBtnText.textContent = paused ? 'Resume' : 'Pause';
+            pauseBtnText.textContent = paused ? 'Enable Expansion' : 'Disable Expansion';
         }
     }
 
@@ -254,9 +262,11 @@ export class HotkeyManager {
         
         // Get the friendly action name
         const actions = {
-            'openPalette': 'Open Palette',
-            'togglePause': 'Toggle Pause',
-            'expandNow': 'Expand Now'
+            'toggleWindow': 'Toggle Window',
+            'toggleExpansion': 'Toggle Expansion',
+            'showSuggestions': 'Show Suggestions',
+            'quickExpand': 'Quick Expand',
+            'focusSearch': 'Focus Search'
         };
         const actionName = actions[action] || action;
         

@@ -451,24 +451,34 @@ func (a *App) handleHotkeyEvent(action string) {
 	fmt.Printf("[APP] Hotkey event received: %s\n", action)
 
 	switch action {
-	case "openPalette":
-		fmt.Printf("[APP] Opening palette via hotkey\n")
-		runtime.EventsEmit(a.ctx, "hotkey:openPalette")
+	case "toggleWindow":
+		fmt.Printf("[APP] Toggling window visibility via hotkey\n")
+		a.ToggleWindow()
+		runtime.EventsEmit(a.ctx, "hotkey:toggleWindow")
 
-	case "togglePause":
+	case "toggleExpansion":
 		a.isPaused = !a.isPaused
-		fmt.Printf("[APP] Toggling pause via hotkey: %t\n", a.isPaused)
+		fmt.Printf("[APP] Toggling expansion via hotkey: paused=%t\n", a.isPaused)
 
 		// Also pause/resume the expansion manager
 		a.expansionManager.SetEnabled(!a.isPaused)
 
-		runtime.EventsEmit(a.ctx, "hotkey:pauseToggled", map[string]interface{}{
+		runtime.EventsEmit(a.ctx, "hotkey:expansionToggled", map[string]interface{}{
 			"paused": a.isPaused,
 		})
 
-	case "expandNow":
-		fmt.Printf("[APP] Expand now via hotkey\n")
-		runtime.EventsEmit(a.ctx, "hotkey:expandNow")
+	case "showSuggestions":
+		fmt.Printf("[APP] Triggering suggestions via hotkey\n")
+		runtime.EventsEmit(a.ctx, "hotkey:showSuggestions")
+
+	case "quickExpand":
+		fmt.Printf("[APP] Quick expand via hotkey\n")
+		runtime.EventsEmit(a.ctx, "hotkey:quickExpand")
+
+	case "focusSearch":
+		fmt.Printf("[APP] Focus search via hotkey\n")
+		a.ShowWindow() // Ensure window is visible first
+		runtime.EventsEmit(a.ctx, "hotkey:focusSearch")
 
 	default:
 		fmt.Printf("[APP] Unknown hotkey action: %s\n", action)

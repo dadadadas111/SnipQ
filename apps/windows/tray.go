@@ -10,16 +10,18 @@ import (
 
 // TrayManager handles system tray functionality
 type TrayManager struct {
-	app       *App
-	ctx       context.Context
-	isRunning bool
-	menuReady bool
+	app         *App
+	ctx         context.Context
+	isRunning   bool
+	menuReady   bool
+	windowShown bool // Track window visibility state
 }
 
 // NewTrayManager creates a new tray manager
 func NewTrayManager(app *App) *TrayManager {
 	return &TrayManager{
-		app: app,
+		app:         app,
+		windowShown: true, // Window starts visible
 	}
 }
 
@@ -114,14 +116,11 @@ func (t *TrayManager) showAbout() {
 
 // ToggleWindow shows or hides the main application window
 func (t *TrayManager) ToggleWindow() {
-	log.Println("Tray: Toggling window visibility")
-	if runtime.WindowIsMinimised(t.ctx) {
-		log.Println("Tray: Window is minimized, showing it")
-		runtime.WindowShow(t.ctx)
-		runtime.WindowUnminimise(t.ctx)
+	log.Printf("Tray: Toggling window visibility (currently shown: %t)", t.windowShown)
+	if t.windowShown {
+		t.HideWindow()
 	} else {
-		log.Println("Tray: Hiding window to tray")
-		runtime.WindowHide(t.ctx)
+		t.ShowWindow()
 	}
 }
 
@@ -132,6 +131,7 @@ func (t *TrayManager) ShowWindow() {
 	runtime.WindowUnminimise(t.ctx)
 	runtime.WindowSetAlwaysOnTop(t.ctx, true)
 	runtime.WindowSetAlwaysOnTop(t.ctx, false) // Bring to front then reset
+	t.windowShown = true
 
 	// Emit event to focus on input field
 	runtime.EventsEmit(t.ctx, "focus-input")
@@ -141,6 +141,7 @@ func (t *TrayManager) ShowWindow() {
 func (t *TrayManager) HideWindow() {
 	log.Println("Tray: Hiding window to tray")
 	runtime.WindowHide(t.ctx)
+	t.windowShown = false
 }
 
 // ExitApp completely exits the application
