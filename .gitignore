@@ -108,3 +108,4 @@ firebase-debug.log
 # Database
 *.sqlite
 *.db
+apps/windows/frontend/package.json.md5

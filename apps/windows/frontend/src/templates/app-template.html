@@ -1,0 +1,313 @@
+<div class="container">
+    <header class="header">
+        <img id="logo" class="logo" style="width: 32px; height: 32px;">
+        <h1>SnipQ - Snippet Manager</h1>
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="main">Main</button>
+            <button class="nav-tab" data-tab="settings">Settings</button>
+        </nav>
+    </header>
+    
+    <div id="main-tab" class="tab-content active">
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>Groups</h3>
+                <div id="vault-info" class="vault-info"></div>
+                <div id="groups-list" class="groups-list"></div>
+                
+                <div class="expansion-status">
+                    <h4>Auto-Expansion</h4>
+                    <div id="expansion-info" class="expansion-info">
+                        <div class="status-item">
+                            <span class="label">Status:</span>
+                            <span id="expansion-status" class="status-value">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Buffer:</span>
+                            <code id="expansion-buffer" class="buffer-display">-</code>
+                        </div>
+                        <div class="expansion-controls">
+                            <button class="btn small" id="toggle-expansion">Toggle</button>
+                            <button class="btn small" id="clear-buffer">Clear Buffer</button>
+                            <button class="btn small" id="refresh-expansion">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="test-section">
+                    <h3>Test Snippet Expansion</h3>
+                    <div class="input-box">
+                        <input class="input" id="trigger-input" type="text" placeholder="Enter trigger (e.g., :ty, :hello)" autocomplete="off" />
+                        <button class="btn primary" id="expand-btn">🚀 Expand</button>
+                        <button class="btn secondary" id="preview-btn">👁️ Preview</button>
+                        <button class="btn-clear" id="clear-btn" title="Clear field">✕</button>
+                    </div>
+                    <div class="result" id="result">Enter a trigger above to test expansion</div>
+                </div>
+                
+                <div class="examples-section">
+                    <h3>🌟 Query Parameter Examples</h3>
+                    <p style="color: #6c757d; margin-bottom: 1rem;">Click any example to test it instantly:</p>
+                    <div class="examples-grid">
+                        <div class="example-card">
+                            <h4>Multilingual Thanks</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":ty">:ty</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=vi">:ty?lang=vi</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=ja&tone=casual">:ty?lang=ja&tone=casual</button>
+                                <button class="example-trigger" data-trigger=":ty?lang=es&tone=formal">:ty?lang=es&tone=formal</button>
+                            </div>
+                            <p><small>Default: English neutral → Try different languages and tones</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Date Formatting</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":date">:date</button>
+                                <button class="example-trigger" data-trigger=":date?format=Monday, January 2, 2006">:date?format=Monday, January 2, 2006</button>
+                                <button class="example-trigger" data-trigger=":date?format=02/01/2006&tz=UTC">:date?format=02/01/2006&tz=UTC</button>
+                                <button class="example-trigger" data-trigger=":date?format=2006-01-02T15:04:05Z07:00">:date?format=2006-01-02T15:04:05Z07:00</button>
+                            </div>
+                            <p><small>Default: YYYY-MM-DD → Try different formats and timezones</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Email Templates</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":email">:email</button>
+                                <button class="example-trigger" data-trigger=":email?name=John&greeting=casual">:email?name=John&greeting=casual</button>
+                                <button class="example-trigger" data-trigger=":email?name=Mr. Smith&lang=vi">:email?name=Mr. Smith&lang=vi</button>
+                            </div>
+                            <p><small>Default: "there" + formal → Try different names, greetings, and languages</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>UUID Generation</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":uuid">:uuid</button>
+                                <button class="example-trigger" data-trigger=":uuid?hyphens=false">:uuid?hyphens=false</button>
+                                <button class="example-trigger" data-trigger=":uuid?upper=true">:uuid?upper=true</button>
+                                <button class="example-trigger" data-trigger=":uuid?hyphens=false&upper=true">:uuid?hyphens=false&upper=true</button>
+                            </div>
+                            <p><small>Default: lowercase with hyphens → Try different formats</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Meeting Notes</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":meeting">:meeting</button>
+                                <button class="example-trigger" data-trigger=":meeting?title=Sprint Planning">:meeting?title=Sprint Planning</button>
+                                <button class="example-trigger" data-trigger=":meeting?title=1:1 Review&format=simple">:meeting?title=1:1 Review&format=simple</button>
+                            </div>
+                            <p><small>Default: Team Meeting + detailed → Try different titles and formats</small></p>
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>Timestamps</h4>
+                            <div class="example-triggers">
+                                <button class="example-trigger" data-trigger=":time">:time</button>
+                                <button class="example-trigger" data-trigger=":time?type=unix">:time?type=unix</button>
+                                <button class="example-trigger" data-trigger=":time?type=readable">:time?type=readable</button>
+                                <button class="example-trigger" data-trigger=":time?type=short&tz=UTC">:time?type=short&tz=UTC</button>
+                            </div>
+                            <p><small>Default: ISO format → Try different timestamp types</small></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="snippets-section">
+                    <h3>Snippets</h3>
+                    <div id="snippets-list" class="snippets-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settings-tab" class="tab-content">
+        <div class="hotkeys-page">
+            <div class="hotkeys-header">
+                <h2>Application Settings</h2>
+                <button class="btn refresh-btn" id="refresh-settings">Refresh</button>
+            </div>
+            
+            <!-- Hotkeys Section -->
+            <div class="hotkeys-table-container">
+                <h3 data-section="hotkeys" style="margin: 0 0 1rem 0; padding: 1rem; background: #f8f9fa; color: #495057;">🎹 Hotkeys</h3>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Toggle Window:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-toggle-window" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('toggleWindow', 'hotkey-toggle-window')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Show/hide the SnipQ main window</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Toggle Expansion:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-toggle-expansion" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('toggleExpansion', 'hotkey-toggle-expansion')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Enable/disable automatic snippet expansion</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Show Suggestions:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-show-suggestions" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('showSuggestions', 'hotkey-show-suggestions')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Show snippet suggestions popup</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Quick Expand:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-quick-expand" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('quickExpand', 'hotkey-quick-expand')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Immediately expand the current trigger</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Focus Search:</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" id="hotkey-focus-search" class="shortcut-display" readonly placeholder="Click to set" style="flex: 1; cursor: pointer;">
+                                <button class="btn secondary small" onclick="recordHotkeyForSetting('focusSearch', 'hotkey-focus-search')">Change</button>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Open window and focus on search input</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Text Expansion Section -->
+            <div class="hotkeys-table-container">
+                <h3 data-section="expansion" style="margin: 0 0 1rem 0; padding: 1rem; background: #f8f9fa; color: #495057;">⚡ Text Expansion</h3>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Trigger Prefix:</label>
+                            <select id="trigger-prefix" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                                <option value=":">: (colon)</option>
+                                <option value=";">; (semicolon)</option>
+                                <option value="/">//</option>
+                                <option value="\\">\\ (backslash)</option>
+                                <option value=",">, (comma)</option>
+                            </select>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Character that triggers snippet suggestions</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Expand Key:</label>
+                            <select id="expand-key" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                                <option value="Tab">Tab</option>
+                                <option value="Enter">Enter</option>
+                                <option value="Space">Space</option>
+                            </select>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Key used to trigger expansion of typed triggers</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Typing Timeout (ms):</label>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <input type="range" id="typing-timeout" min="500" max="10000" step="250" value="2000" style="flex: 1;">
+                                <input type="number" id="typing-timeout-value" min="500" max="10000" step="250" value="2000" style="width: 80px; padding: 0.25rem; border: 1px solid #ced4da; border-radius: 4px;">
+                                <label style="display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                    <input type="checkbox" id="no-timeout" style="cursor: pointer;">
+                                    <span style="font-size: 0.8rem;">No timeout</span>
+                                </label>
+                            </div>
+                            <small style="color: #6c757d; font-size: 0.8rem;">How long to wait before clearing the typing buffer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Smart Suggestions Section -->
+            <div class="hotkeys-table-container">
+                <h3 data-section="suggestions" style="margin: 0 0 1rem 0; padding: 1rem; background: #f8f9fa; color: #495057;">💡 Smart Suggestions</h3>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 500; color: #495057; font-size: 1rem;">
+                                <input type="checkbox" id="suggestions-enabled" checked style="cursor: pointer;">
+                                <span>Enable Smart Suggestions</span>
+                            </label>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Show IDE-style autocomplete suggestions while typing</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Minimum Query Length:</label>
+                            <input type="number" id="min-query-length" min="1" max="5" value="1" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                            <small style="color: #6c757d; font-size: 0.8rem;">Minimum characters needed before showing suggestions</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Maximum Suggestions:</label>
+                            <input type="number" id="max-suggestions" min="3" max="20" value="10" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                            <small style="color: #6c757d; font-size: 0.8rem;">Maximum number of suggestions to display</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Show Delay (ms):</label>
+                            <input type="number" id="suggestion-delay" min="0" max="1000" step="50" value="200" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                            <small style="color: #6c757d; font-size: 0.8rem;">Delay before showing suggestions (prevents flickering)</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Hide Delay (ms):</label>
+                            <input type="number" id="suggestion-hide-delay" min="500" max="5000" step="250" value="1000" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                            <small style="color: #6c757d; font-size: 0.8rem;">How long to keep suggestions visible after stopping typing</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Settings Section -->
+            <div class="hotkeys-table-container">
+                <h3 data-section="advanced" style="margin: 0 0 1rem 0; padding: 1rem; background: #f8f9fa; color: #495057;">🔧 Advanced Settings</h3>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 500; color: #495057;">
+                                <input type="checkbox" id="strict-boundaries" checked style="cursor: pointer;">
+                                <span>Strict Word Boundaries</span>
+                            </label>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Only expand triggers at word boundaries (recommended)</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 500; color: #495057;">
+                                <input type="checkbox" id="pause-on-failure" style="cursor: pointer;">
+                                <span>Pause on Expansion Failure</span>
+                            </label>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Automatically pause when expansion fails</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-weight: 500; color: #495057;">Keyboard Buffer Size:</label>
+                            <input type="number" id="buffer-size" min="50" max="500" value="100" style="padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; background: white;">
+                            <small style="color: #6c757d; font-size: 0.8rem;">Maximum characters to track in typing buffer</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 500; color: #495057;">
+                                <input type="checkbox" id="case-sensitive" style="cursor: pointer;">
+                                <span>Case Sensitive Triggers</span>
+                            </label>
+                            <small style="color: #6c757d; font-size: 0.8rem;">Whether trigger matching is case sensitive</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hotkeys-actions">
+                <button class="btn success" id="save-settings">💾 Save All Settings</button>
+                <button class="btn secondary" id="reset-settings">🔄 Reset to Defaults</button>
+                <button class="btn warning" id="export-settings">📤 Export Settings</button>
+                <button class="btn secondary" id="import-settings">📥 Import Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
